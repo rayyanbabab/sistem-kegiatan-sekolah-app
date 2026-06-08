@@ -13,9 +13,9 @@ export default function SchedulePage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Jadwal Classmeeting 2026</h1>
-        <p className="text-gray-600 mt-2">Lihat jadwal lengkap semua kompetisi</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-gray-900">Jadwal Classmeeting 2026</h1>
+        <p className="text-gray-600 mt-2 text-lg">Lihat jadwal lengkap semua kompetisi</p>
       </div>
 
       {/* Timeline */}
@@ -26,15 +26,15 @@ export default function SchedulePage() {
           const isFuture = new Date(comp.date) > new Date()
 
           return (
-            <Card 
+            <div 
               key={comp.id} 
-              className={`border-l-4 ${
-                isToday ? 'border-l-blue-600 bg-blue-50' :
-                isPast ? 'border-l-gray-400 opacity-75' :
-                'border-l-green-600'
+              className={`rounded-2xl card-premium overflow-hidden border-l-4 smooth-transition ${
+                isToday ? 'border-l-blue-600 bg-blue-50/50' :
+                isPast ? 'border-l-gray-400 opacity-60' :
+                'border-l-green-600 bg-green-50/30'
               }`}
             >
-              <CardContent className="pt-6">
+              <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   {/* Main Info */}
                   <div className="flex-1">
@@ -85,8 +85,8 @@ export default function SchedulePage() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )
         })}
       </div>
