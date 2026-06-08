@@ -57,21 +57,21 @@ export default function LandingPage() {
   return (
     <>
       {/* Navigation */}
-      <nav className="fixed w-full top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
+      <nav className="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SM</span>
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-lg">
+              <span className="text-white font-black text-sm">SM</span>
             </div>
-            <span className="font-bold text-gray-900">SMKS Digital</span>
+            <span className="font-bold text-lg text-gray-900">SMKS Digital</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-gray-700 hover:text-blue-600 transition">Fitur</a>
-            <a href="#roles" className="text-gray-700 hover:text-blue-600 transition">Role System</a>
-            <a href="#stats" className="text-gray-700 hover:text-blue-600 transition">Modul</a>
+            <a href="#features" className="text-gray-700 hover:text-blue-600 smooth-transition text-sm font-medium">Fitur</a>
+            <a href="#roles" className="text-gray-700 hover:text-blue-600 smooth-transition text-sm font-medium">Role System</a>
+            <a href="#stats" className="text-gray-700 hover:text-blue-600 smooth-transition text-sm font-medium">Modul</a>
           </div>
           <Link href="/auth/login">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl smooth-transition">
               Masuk Dashboard
             </Button>
           </Link>
@@ -79,33 +79,35 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-200 to-blue-100 rounded-full opacity-30 blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-200 to-purple-100 rounded-full opacity-30 blur-3xl"></div>
+      <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-200 to-blue-100 rounded-full opacity-40 blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-200 to-pink-100 rounded-full opacity-40 blur-3xl"></div>
+          <div className="absolute top-1/2 right-0 w-72 h-72 bg-gradient-to-br from-indigo-200 to-blue-100 rounded-full opacity-30 blur-3xl"></div>
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
-          <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Platform Manajemen Kegiatan Sekolah Modern
-          </Badge>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100/80 backdrop-blur-sm border border-blue-200 mb-8">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            <span className="text-sm font-semibold text-blue-700">Platform Manajemen Kegiatan Sekolah</span>
+          </div>
 
-          <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-6 text-balance">
-            Kelola Semua Kegiatan Sekolah Dalam Satu Tempat
+          <h1 className="text-6xl sm:text-7xl font-black text-gray-900 mb-6 text-balance leading-tight">
+            Kelola Semua Kegiatan Sekolah <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Dalam Satu Tempat</span>
           </h1>
 
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto text-balance">
-            Platform digital terpadu untuk Classmeeting, Pemilu OSIS, Event Management, dan Pengumuman Sekolah dengan sistem keamanan berbasis NIS dan role-based access control.
+          <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto text-balance leading-relaxed">
+            Platform digital terpadu untuk Classmeeting, Pemilu OSIS, Event Management, dan Pengumuman dengan sistem keamanan berbasis NIS dan role-based access control.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link href="/auth/login">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-                Mulai Sekarang <ArrowRight className="w-4 h-4" />
+              <Button size="lg" className="gradient-primary text-white gap-2 shadow-xl hover:shadow-2xl smooth-transition">
+                Mulai Sekarang <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
             <a href="#features">
-              <Button size="lg" variant="outline" className="gap-2">
+              <Button size="lg" variant="outline" className="gap-2 smooth-transition hover:border-blue-600 hover:text-blue-600">
                 Pelajari Fitur
               </Button>
             </a>
@@ -114,9 +116,9 @@ export default function LandingPage() {
           {/* Stats */}
           <div id="stats" className="grid grid-cols-3 gap-4 sm:gap-8 mt-16">
             {stats.map((stat) => (
-              <div key={stat.label} className="p-4 rounded-lg bg-white/60 backdrop-blur border border-gray-200">
-                <div className="text-3xl font-bold text-blue-600">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
+              <div key={stat.label} className="p-6 rounded-2xl card-premium group">
+                <div className="text-4xl font-black bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 smooth-transition">{stat.value}</div>
+                <div className="text-sm font-semibold text-gray-600 mt-2">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -124,28 +126,24 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Fitur Lengkap dan Terintegrasi</h2>
-            <p className="text-xl text-gray-600">Semua yang Anda butuhkan untuk mengelola kegiatan sekolah</p>
+            <h2 className="text-5xl font-black text-gray-900 mb-4">Fitur Lengkap dan Terintegrasi</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Semua yang Anda butuhkan untuk mengelola kegiatan sekolah dengan mudah dan efisien</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, idx) => {
               const Icon = feature.icon
               return (
-                <Card key={idx} className="border border-gray-200 hover:border-blue-300 hover:shadow-lg transition">
-                  <CardHeader>
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900">{feature.title}</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-gray-600">{feature.description}</CardDescription>
-                  </CardContent>
-                </Card>
+                <div key={idx} className="group p-6 rounded-2xl card-premium">
+                  <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center mb-4 group-hover:scale-110 smooth-transition shadow-lg">
+                    <Icon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="font-bold text-lg text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                </div>
               )
             })}
           </div>
@@ -153,101 +151,71 @@ export default function LandingPage() {
       </section>
 
       {/* Modules Showcase */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">4 Modul Utama</h2>
-            <p className="text-xl text-gray-600">Sistem terintegrasi untuk berbagai kebutuhan sekolah</p>
+            <h2 className="text-5xl font-black text-gray-900 mb-4">4 Modul Utama</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Sistem terintegrasi untuk berbagai kebutuhan sekolah dengan fitur lengkap</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <Trophy className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Classmeeting</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Pendaftaran & verifikasi peserta</p>
-                <p>• Jadwal pertandingan otomatis</p>
-                <p>• Bracket tournament visualization</p>
-                <p>• Leaderboard real-time</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <Lock className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Pemilu OSIS</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Profil kandidat dengan visi misi</p>
-                <p>• Voting aman berbasis NIS</p>
-                <p>• One-time voting protection</p>
-                <p>• Real-time vote counting</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Calendar className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Event Management</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Buat event sekolah dinamis</p>
-                <p>• Kelola status event</p>
-                <p>• Verifikasi peserta</p>
-                <p>• Tracking peserta & hasil</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <Users className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Pengumuman</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Broadcast instan ke siswa</p>
-                <p>• Kategori pengumuman</p>
-                <p>• Notifikasi real-time</p>
-                <p>• Archive & search</p>
-              </CardContent>
-            </Card>
+            {[
+              { icon: Trophy, title: 'Classmeeting', color: 'from-orange-500 to-red-500', items: ['Pendaftaran & verifikasi peserta', 'Jadwal pertandingan otomatis', 'Bracket tournament visualization', 'Leaderboard real-time'] },
+              { icon: Lock, title: 'Pemilu OSIS', color: 'from-blue-500 to-cyan-500', items: ['Profil kandidat dengan visi misi', 'Voting aman berbasis NIS', 'One-time voting protection', 'Real-time vote counting'] },
+              { icon: Calendar, title: 'Event Management', color: 'from-purple-500 to-pink-500', items: ['Buat event sekolah dinamis', 'Kelola status event', 'Verifikasi peserta', 'Tracking peserta & hasil'] },
+              { icon: Users, title: 'Pengumuman', color: 'from-green-500 to-emerald-500', items: ['Broadcast instan ke siswa', 'Kategori pengumuman', 'Notifikasi real-time', 'Archive & search'] }
+            ].map((module, idx) => {
+              const Icon = module.icon
+              return (
+                <div key={idx} className="overflow-hidden rounded-2xl card-premium group">
+                  <div className={`h-32 bg-gradient-to-br ${module.color} flex items-center justify-center relative overflow-hidden`}>
+                    <div className="absolute inset-0 opacity-10 group-hover:opacity-20 smooth-transition">
+                      <Icon className="w-32 h-32" />
+                    </div>
+                    <Icon className="w-20 h-20 text-white opacity-80 relative z-10" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">{module.title}</h3>
+                    <ul className="space-y-2">
+                      {module.items.map((item, i) => (
+                        <li key={i} className="flex items-start gap-3 text-gray-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-2 flex-shrink-0"></span>
+                          <span className="text-sm">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
       {/* Role System */}
-      <section id="roles" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="roles" className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Sistem Role Fleksibel</h2>
-            <p className="text-xl text-gray-600">Setiap pengguna memiliki akses sesuai perannya</p>
+            <h2 className="text-5xl font-black text-gray-900 mb-4">Sistem Role Fleksibel</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Setiap pengguna memiliki akses dan fitur sesuai perannya di sekolah</p>
           </div>
 
-          <div className="grid md:grid-cols-5 gap-4">
+          <div className="grid md:grid-cols-5 gap-4 mb-12">
             {roles.map((role) => (
-              <Card key={role.name} className={`border-0 shadow-md hover:shadow-lg transition overflow-hidden bg-gradient-to-br ${role.color}`}>
-                <div className="h-24 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
+              <div key={role.name} className={`group overflow-hidden rounded-2xl bg-gradient-to-br ${role.color} shadow-lg hover:shadow-2xl smooth-transition cursor-pointer transform hover:scale-105`}>
+                <div className="h-32 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 smooth-transition">
+                    <Users className="w-7 h-7 text-white" />
                   </div>
                 </div>
-                <CardContent className="pt-4 pb-6">
-                  <p className="text-center font-semibold text-white text-sm">{role.name}</p>
-                </CardContent>
-              </Card>
+                <div className="px-4 py-6 bg-gradient-to-t from-black/30 to-transparent">
+                  <p className="text-center font-bold text-white">{role.name}</p>
+                </div>
+              </div>
             ))}
           </div>
 
-          <div className="mt-12 p-8 bg-blue-50 rounded-xl border border-blue-200">
+          <div className="p-8 rounded-2xl card-premium bg-gradient-to-br from-white to-blue-50/50">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Akses Role-Based</h3>
             <div className="grid md:grid-cols-2 gap-6 text-gray-700">
               <div>
