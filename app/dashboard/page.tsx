@@ -14,110 +14,98 @@ export default function DashboardPage() {
   if (currentUser?.role === 'super-admin') {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Kelola semua aspek sistem manajemen kegiatan sekolah</p>
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600 mt-2 text-lg">Kelola semua aspek sistem manajemen kegiatan sekolah</p>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-gray-900">450</p>
-                <p className="text-sm text-gray-600">Total Siswa</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            { icon: Users, label: 'Total Siswa', value: '450', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50' },
+            { icon: Calendar, label: 'Total Event', value: events.length.toString(), color: 'from-green-500 to-green-600', bgColor: 'bg-green-50' },
+            { icon: Trophy, label: 'Peserta Lomba', value: '12', color: 'from-yellow-500 to-yellow-600', bgColor: 'bg-yellow-50' },
+            { icon: Vote, label: 'Sudah Vote', value: votingSession.votedCount.toString(), color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50' }
+          ].map((metric, idx) => {
+            const Icon = metric.icon
+            return (
+              <div key={idx} className="rounded-2xl card-premium overflow-hidden group">
+                <div className={`h-2 w-full bg-gradient-to-r ${metric.color}`}></div>
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-gray-600 text-sm font-medium mb-1">{metric.label}</p>
+                      <p className="text-4xl font-black text-gray-900">{metric.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl ${metric.bgColor} group-hover:scale-110 smooth-transition`}>
+                      <Icon className={`w-6 h-6 bg-gradient-to-br ${metric.color} bg-clip-text text-transparent`} />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Calendar className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-gray-900">{events.length}</p>
-                <p className="text-sm text-gray-600">Total Event</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-gray-900">12</p>
-                <p className="text-sm text-gray-600">Peserta Lomba</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Vote className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-gray-900">{votingSession.votedCount}</p>
-                <p className="text-sm text-gray-600">Sudah Vote</p>
-              </div>
-            </CardContent>
-          </Card>
+            )
+          })}
         </div>
 
         {/* Management Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
+          <div className="rounded-2xl card-premium overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-1"></div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
                 Event Aktif
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
               <div className="space-y-3">
                 {events.filter(e => e.status === 'active').map(event => (
-                  <div key={event.id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={event.id} className="flex items-start justify-between p-4 bg-blue-50/50 rounded-xl hover:bg-blue-100/50 smooth-transition">
                     <div>
-                      <p className="font-medium text-gray-900">{event.name}</p>
-                      <p className="text-xs text-gray-600">{new Date(event.date).toLocaleDateString('id-ID')}</p>
+                      <p className="font-semibold text-gray-900">{event.name}</p>
+                      <p className="text-xs text-gray-600 mt-1">{new Date(event.date).toLocaleDateString('id-ID')}</p>
                     </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded font-medium">Aktif</span>
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Aktif</span>
                   </div>
                 ))}
               </div>
               <Link href="/dashboard/events">
-                <Button variant="outline" className="w-full mt-4">Kelola Event</Button>
+                <Button className="w-full mt-4 gradient-primary text-white smooth-transition">Kelola Event</Button>
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
+          <div className="rounded-2xl card-premium overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-1"></div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-600" />
                 Statistik Voting
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+              </h3>
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Pemilih</span>
-                  <span className="font-bold text-gray-900">{votingSession.totalVoters}</span>
+                  <span className="text-gray-600 font-medium">Total Pemilih</span>
+                  <span className="text-2xl font-bold text-gray-900">{votingSession.totalVoters}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Sudah Memilih</span>
-                  <span className="font-bold text-green-600">{votingSession.votedCount}</span>
+                  <span className="text-gray-600 font-medium">Sudah Memilih</span>
+                  <span className="text-2xl font-bold text-green-600">{votingSession.votedCount}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full"
-                    style={{ width: `${(votingSession.votedCount / votingSession.totalVoters) * 100}%` }}
-                  />
+                <div className="space-y-2">
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full smooth-transition"
+                      style={{ width: `${(votingSession.votedCount / votingSession.totalVoters) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-600">
+                    {Math.round((votingSession.votedCount / votingSession.totalVoters) * 100)}% partisipasi
+                  </p>
                 </div>
-                <p className="text-xs text-gray-600">
-                  {Math.round((votingSession.votedCount / votingSession.totalVoters) * 100)}% partisipasi
-                </p>
               </div>
               <Link href="/dashboard/pemilu/real-count">
-                <Button variant="outline" className="w-full mt-4">Lihat Real Count</Button>
+                <Button className="w-full mt-4 gradient-primary text-white smooth-transition">Lihat Real Count</Button>
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -129,55 +117,64 @@ export default function DashboardPage() {
 
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Halo, {currentUser.name}!</h1>
-          <p className="text-gray-600 mt-2">Selamat datang di sistem manajemen kegiatan sekolah</p>
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-gray-900">Halo, {currentUser.name}!</h1>
+          <p className="text-gray-600 mt-2 text-lg">Selamat datang di sistem manajemen kegiatan sekolah</p>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {activeVoting && (
             <Link href="/dashboard/pemilu/voting">
-              <Card className="bg-purple-50 border-purple-200 cursor-pointer hover:shadow-lg transition">
-                <CardContent className="pt-6">
+              <div className="rounded-2xl card-premium overflow-hidden group cursor-pointer">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-1"></div>
+                <div className="p-6">
                   <div className="flex items-center gap-4">
-                    <Vote className="w-8 h-8 text-purple-600" />
+                    <div className="p-3 bg-purple-100 rounded-lg group-hover:scale-110 smooth-transition">
+                      <Vote className="w-6 h-6 text-purple-600" />
+                    </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Voting Aktif</p>
+                      <p className="font-bold text-gray-900">Voting Aktif</p>
                       <p className="text-sm text-gray-600">Pilih kandidat OSIS</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </Link>
           )}
 
           <Link href="/dashboard/classmeeting/schedule">
-            <Card className="bg-blue-50 border-blue-200 cursor-pointer hover:shadow-lg transition">
-              <CardContent className="pt-6">
+            <div className="rounded-2xl card-premium overflow-hidden group cursor-pointer">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-1"></div>
+              <div className="p-6">
                 <div className="flex items-center gap-4">
-                  <Clock className="w-8 h-8 text-blue-600" />
+                  <div className="p-3 bg-blue-100 rounded-lg group-hover:scale-110 smooth-transition">
+                    <Clock className="w-6 h-6 text-blue-600" />
+                  </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Jadwal Hari Ini</p>
+                    <p className="font-bold text-gray-900">Jadwal Hari Ini</p>
                     <p className="text-sm text-gray-600">Lihat lomba mendatang</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </Link>
 
           <Link href="/dashboard/pengumuman">
-            <Card className="bg-orange-50 border-orange-200 cursor-pointer hover:shadow-lg transition">
-              <CardContent className="pt-6">
+            <div className="rounded-2xl card-premium overflow-hidden group cursor-pointer">
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 h-1"></div>
+              <div className="p-6">
                 <div className="flex items-center gap-4">
-                  <Megaphone className="w-8 h-8 text-orange-600" />
+                  <div className="p-3 bg-orange-100 rounded-lg group-hover:scale-110 smooth-transition">
+                    <Megaphone className="w-6 h-6 text-orange-600" />
+                  </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Pengumuman</p>
+                    <p className="font-bold text-gray-900">Pengumuman</p>
                     <p className="text-sm text-gray-600">{announcements.length} pengumuman</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </Link>
         </div>
 

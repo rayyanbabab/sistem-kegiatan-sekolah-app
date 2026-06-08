@@ -38,20 +38,23 @@ export default function VotingPage() {
   if (votingSession.status === 'closed') {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Voting Pemilu OSIS 2026</h1>
-          <p className="text-gray-600 mt-2">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-gray-900">Voting Pemilu OSIS 2026</h1>
+          <p className="text-gray-600 mt-2 text-lg">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
         </div>
 
-        <Card className="bg-gray-50 border-gray-300">
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Voting Telah Ditutup</h2>
-              <p className="text-gray-600">Terima kasih telah berpartisipasi dalam voting Pemilu OSIS 2026</p>
+        <div className="rounded-2xl card-premium overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-400 to-gray-500 h-2"></div>
+          <div className="p-8">
+            <div className="text-center py-8">
+              <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                <Lock className="w-10 h-10 text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Voting Telah Ditutup</h2>
+              <p className="text-gray-600 text-lg">Terima kasih telah berpartisipasi dalam voting Pemilu OSIS 2026</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
@@ -60,24 +63,27 @@ export default function VotingPage() {
   if (votingComplete) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Voting Pemilu OSIS 2026</h1>
-          <p className="text-gray-600 mt-2">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-gray-900">Voting Pemilu OSIS 2026</h1>
+          <p className="text-gray-600 mt-2 text-lg">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
         </div>
 
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6">
+        <div className="rounded-2xl card-premium overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 h-2"></div>
+          <div className="p-8">
             <div className="flex items-start gap-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600 flex-shrink-0 mt-1" />
+              <div className="p-3 bg-green-100 rounded-full flex-shrink-0">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
               <div>
-                <h2 className="text-lg font-bold text-green-900 mb-2">Terima Kasih!</h2>
-                <p className="text-green-800">
+                <h2 className="text-2xl font-bold text-green-900 mb-2">Terima Kasih!</h2>
+                <p className="text-green-800 text-lg">
                   Suara Anda telah berhasil dicatat. Anda tidak dapat mengubah pilihan setelah ini.
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <Button
           onClick={() => window.location.href = '/dashboard/pemilu/real-count'}

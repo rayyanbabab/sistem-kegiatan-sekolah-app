@@ -49,14 +49,25 @@ export default function TeamsPage() {
     const badge = getStatusBadge(team.status)
 
     return (
-      <Card className="hover:shadow-lg transition">
-        <CardContent className="pt-6">
+      <div className="rounded-2xl card-premium overflow-hidden group">
+        <div className={`h-1 ${
+          team.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+          team.status === 'registered' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+          'bg-gradient-to-r from-red-500 to-red-600'
+        }`}></div>
+        <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-start gap-3 flex-1">
-              {getStatusIcon(team.status)}
+              <div className={`p-2 rounded-lg ${
+                team.status === 'approved' ? 'bg-green-100' :
+                team.status === 'registered' ? 'bg-yellow-100' :
+                'bg-red-100'
+              } group-hover:scale-110 smooth-transition`}>
+                {getStatusIcon(team.status)}
+              </div>
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">{team.name}</h3>
-                <p className="text-sm text-gray-600">{getCompetitionName(team.competition)}</p>
+                <p className="text-sm text-gray-600 font-medium">{getCompetitionName(team.competition)}</p>
               </div>
             </div>
             <Badge className={`${badge.bg} ${badge.text}`}>
@@ -107,16 +118,16 @@ export default function TeamsPage() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Manajemen Tim</h1>
-        <p className="text-gray-600 mt-2">
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-gray-900">Manajemen Tim</h1>
+        <p className="text-gray-600 mt-2 text-lg">
           {currentUser?.role === 'super-admin' || currentUser?.role === 'panitia'
             ? 'Verifikasi dan kelola pendaftaran tim'
             : 'Kelola tim kelas Anda'}

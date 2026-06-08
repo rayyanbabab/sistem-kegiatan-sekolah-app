@@ -43,28 +43,18 @@ export default function PengumumanPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Pengumuman</h1>
-        <p className="text-gray-600 mt-2">Informasi penting tentang kegiatan sekolah</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-gray-900">Pengumuman</h1>
+        <p className="text-gray-600 mt-2 text-lg">Informasi penting tentang kegiatan sekolah</p>
       </div>
 
       {/* Filter Tags */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-          Semua
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-          Sekolah
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-          Lomba
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-          Pemilu
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-          Juara
-        </Badge>
+      <div className="flex flex-wrap gap-3 mb-8">
+        {['Semua', 'Sekolah', 'Lomba', 'Pemilu', 'Juara'].map((tag) => (
+          <button key={tag} className="px-4 py-2 rounded-full font-semibold text-sm smooth-transition hover:scale-105 border-2 border-gray-200 hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50">
+            {tag}
+          </button>
+        ))}
       </div>
 
       {/* Announcements List */}
@@ -75,49 +65,52 @@ export default function PengumumanPage() {
           const isNew = (new Date().getTime() - announcementDate.getTime()) < (7 * 24 * 60 * 60 * 1000)
 
           return (
-            <Card key={announcement.id} className="hover:shadow-lg transition">
-              <CardContent className="pt-6">
-                <div className="flex gap-4">
-                  {/* Icon */}
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${typeBadge.bg} ${typeBadge.text}`}>
-                    {getTypeIcon(announcement.type)}
+            <div key={announcement.id} className="rounded-2xl card-premium overflow-hidden group">
+              <div className="flex gap-4 p-6">
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${typeBadge.bg} ${typeBadge.text} group-hover:scale-110 smooth-transition`}>
+                  {getTypeIcon(announcement.type)}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg">{announcement.title}</h3>
+                      {isNew && (
+                        <span className="text-xs bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full font-bold mt-1 inline-block">
+                          BARU
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-900 text-lg">{announcement.title}</h3>
-                        {isNew && (
-                          <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-medium">
-                            BARU
-                          </span>
-                        )}
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {announcement.description}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
+                        announcement.type === 'sekolah' ? 'bg-blue-600' :
+                        announcement.type === 'lomba' ? 'bg-green-600' :
+                        announcement.type === 'pemilu' ? 'bg-purple-600' :
+                        'bg-yellow-600'
+                      }`}>
+                        {typeBadge.label}
+                      </span>
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <Calendar className="w-3 h-3" />
+                        {announcementDate.toLocaleDateString('id-ID')}
                       </div>
                     </div>
-
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                      {announcement.description}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <Badge className={`${typeBadge.bg} ${typeBadge.text}`}>
-                          {typeBadge.label}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Calendar className="w-3 h-3" />
-                          {announcementDate.toLocaleDateString('id-ID')}
-                        </div>
-                      </div>
-                      <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                        Baca Selengkapnya →
-                      </button>
-                    </div>
+                    <button className="text-blue-600 hover:text-blue-700 text-sm font-bold smooth-transition">
+                      Baca →
+                    </button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )
         })}
       </div>

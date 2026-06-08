@@ -15,14 +15,14 @@ export default function EventsPage() {
   if (currentUser?.role !== 'super-admin') {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <Card>
-          <CardContent className="pt-12 pb-12">
+        <div className="rounded-2xl card-premium overflow-hidden">
+          <div className="py-16 px-6">
             <div className="text-center">
-              <p className="text-gray-600 font-medium text-lg">Akses Ditolak</p>
-              <p className="text-gray-500">Hanya Super Admin yang dapat mengakses halaman ini</p>
+              <p className="text-gray-600 font-bold text-lg">Akses Ditolak</p>
+              <p className="text-gray-500 mt-2">Hanya Super Admin yang dapat mengakses halaman ini</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
@@ -32,43 +32,32 @@ export default function EventsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manajemen Event</h1>
-          <p className="text-gray-600 mt-2">Kelola semua event sekolah</p>
+          <h1 className="text-4xl font-black text-gray-900">Manajemen Event</h1>
+          <p className="text-gray-600 mt-2 text-lg">Kelola semua event sekolah</p>
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button className="gradient-primary text-white shadow-lg hover:shadow-xl smooth-transition gap-2">
+          <Plus className="w-5 h-5" />
           Event Baru
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">{events.length}</p>
-              <p className="text-sm text-gray-600">Total Event</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {[
+          { label: 'Total Event', value: events.length, color: 'from-blue-500 to-blue-600' },
+          { label: 'Event Aktif', value: activeEvents.length, color: 'from-green-500 to-green-600' },
+          { label: 'Event Mendatang', value: upcomingEvents.length, color: 'from-purple-500 to-purple-600' }
+        ].map((stat, idx) => (
+          <div key={idx} className="rounded-2xl card-premium overflow-hidden">
+            <div className={`h-2 bg-gradient-to-r ${stat.color}`}></div>
+            <div className="p-6 text-center">
+              <p className="text-4xl font-black bg-gradient-to-br ${stat.color} bg-clip-text text-transparent mb-1">{stat.value}</p>
+              <p className="text-gray-600 font-medium">{stat.label}</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">{activeEvents.length}</p>
-              <p className="text-sm text-gray-600">Event Aktif</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-blue-600">{upcomingEvents.length}</p>
-              <p className="text-sm text-gray-600">Event Mendatang</p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        ))}
       </div>
 
       {/* Event List */}

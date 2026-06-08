@@ -20,53 +20,43 @@ export default function CompetitionsPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Daftar Kompetisi Classmeeting 2026</h1>
-        <p className="text-gray-600 mt-2">Pilih kompetisi dan daftarkan tim kelas Anda</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-gray-900">Daftar Kompetisi Classmeeting 2026</h1>
+        <p className="text-gray-600 mt-2 text-lg">Pilih kompetisi dan daftarkan tim kelas Anda</p>
       </div>
 
       {/* Summary Cards */}
       {currentUser?.role === 'super-admin' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900">{competitions.length}</p>
-                <p className="text-sm text-gray-600">Total Kompetisi</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[
+            { label: 'Total Kompetisi', value: competitions.length, color: 'from-blue-500 to-blue-600' },
+            { label: 'Tim Terdaftar', value: teams.length, color: 'from-green-500 to-green-600' },
+            { label: 'Kategori', value: Object.keys(byCategory).length, color: 'from-purple-500 to-purple-600' }
+          ].map((metric, idx) => (
+            <div key={idx} className="rounded-2xl card-premium overflow-hidden">
+              <div className={`h-2 bg-gradient-to-r ${metric.color}`}></div>
+              <div className="p-6 text-center">
+                <p className="text-4xl font-black bg-gradient-to-br ${metric.color} bg-clip-text text-transparent mb-1">{metric.value}</p>
+                <p className="text-gray-600 font-medium">{metric.label}</p>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900">{teams.length}</p>
-                <p className="text-sm text-gray-600">Tim Terdaftar</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900">{Object.keys(byCategory).length}</p>
-                <p className="text-sm text-gray-600">Kategori</p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Competitions by Category */}
       {Object.entries(byCategory).map(([category, comps]) => (
-        <div key={category} className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              category === 'Olahraga' ? 'bg-blue-100 text-blue-700' :
-              category === 'Akademik' ? 'bg-green-100 text-green-700' :
-              'bg-purple-100 text-purple-700'
+        <div key={category} className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <span className={`px-4 py-2 rounded-full text-sm font-bold text-white ${
+              category === 'Olahraga' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+              category === 'Akademik' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+              'bg-gradient-to-r from-purple-500 to-purple-600'
             }`}>
               {category}
             </span>
-          </h2>
+            <h2 className="text-2xl font-bold text-gray-900">{comps.length} Kompetisi</h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             {comps.map(comp => {

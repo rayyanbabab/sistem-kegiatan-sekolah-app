@@ -13,20 +13,21 @@ export default function CandidatesPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Kandidat OSIS 2026</h1>
-        <p className="text-gray-600 mt-2">Lihat profil dan kampanye setiap kandidat</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-gray-900">Kandidat OSIS 2026</h1>
+        <p className="text-gray-600 mt-2 text-lg">Lihat profil dan kampanye setiap kandidat</p>
       </div>
 
       {/* Candidates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {sortedCandidates.map((candidate) => (
-          <Card key={candidate.id} className="hover:shadow-lg transition">
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
+          <div key={candidate.id} className="rounded-2xl card-premium overflow-hidden group">
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2"></div>
+            <div className="p-6">
+              <div className="flex gap-4 mb-4">
                 {/* Photo */}
                 <div className="flex-shrink-0">
-                  <div className="w-24 h-24 rounded-lg bg-gray-200 overflow-hidden">
+                  <div className="w-28 h-28 rounded-xl bg-gray-200 overflow-hidden group-hover:scale-105 smooth-transition">
                     <img
                       src={candidate.photo}
                       alt={candidate.name}
@@ -36,35 +37,35 @@ export default function CandidatesPage() {
                 </div>
 
                 {/* Info */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 flex flex-col">
+                  <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-bold text-gray-900">{candidate.name}</h3>
-                        <Badge className="bg-purple-100 text-purple-700 font-bold">
-                          #{candidate.number}
-                        </Badge>
                       </div>
-                      <p className="text-xs text-gray-600">{candidate.kelas}</p>
+                      <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-bold rounded-full inline-block">
+                        #{candidate.number}
+                      </span>
+                      <p className="text-sm text-gray-600 font-medium mt-2">{candidate.kelas}</p>
                     </div>
                   </div>
 
                   {/* Vote Count */}
-                  <div className="mb-3 p-2 bg-purple-50 rounded">
-                    <p className="text-2xl font-bold text-purple-600">{candidate.votes}</p>
-                    <p className="text-xs text-gray-600">suara</p>
+                  <div className="mb-4 p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                    <p className="text-3xl font-black bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">{candidate.votes}</p>
+                    <p className="text-xs text-gray-600 font-semibold">suara</p>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-auto">
                     <Link href={`/dashboard/pemilu/candidate/${candidate.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Lihat Detail
+                      <Button variant="outline" size="sm" className="w-full font-semibold smooth-transition">
+                        Detail
                       </Button>
                     </Link>
                     {currentUser?.role === 'siswa' && (
                       <Link href="/dashboard/pemilu/voting" className="flex-1">
-                        <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700">
+                        <Button size="sm" className="w-full gradient-primary text-white font-semibold smooth-transition">
                           Pilih
                         </Button>
                       </Link>
@@ -72,8 +73,8 @@ export default function CandidatesPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
