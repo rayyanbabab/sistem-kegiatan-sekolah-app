@@ -1,204 +1,202 @@
 'use client'
 
-import { candidates, votingSession } from '@/lib/mockData'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { TrendingUp, Users, Clock } from 'lucide-react'
+import { BarChart3, Users, TrendingUp, Clock, Vote } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  PieChart, Pie
+} from 'recharts'
+
+const CANDIDATES = [
+  { id: '1', number: 1, name: 'Siti Nurhaliza', kelas: 'XII IPA 1', votes: 147, color: '#60A5FA' },
+  { id: '2', number: 2, name: 'Budi Santoso',   kelas: 'XII IPS 2', votes: 98,  color: '#A78BFA' },
+  { id: '3', number: 3, name: 'Rina Puspita',   kelas: 'XII IPA 2', votes: 73,  color: '#F472B6' },
+  { id: '4', number: 4, name: 'Hendra Wijaya',  kelas: 'XII IPA 3', votes: 56,  color: '#FB923C' },
+]
+
+const TOTAL_VOTERS = 450
+const totalVotes = CANDIDATES.reduce((s, c) => s + c.votes, 0)
+const participation = totalVotes > 0 ? Math.round((totalVotes / TOTAL_VOTERS) * 100) : 0
+
+const chartData = CANDIDATES.map(c => ({
+  name: `#${c.number} ${c.name.split(' ')[0]}`,
+  votes: c.votes,
+  pct: totalVotes > 0 ? Math.round((c.votes / totalVotes) * 100) : 0,
+  color: c.color,
+}))
+
+
+const CustomBarTip = ({ active, payload, label }: any) => active && payload?.length ? (
+  <div className="glass-card rounded-xl p-3 border border-white/20 shadow-2xl text-sm">
+    <p className="text-white font-semibold">{label}</p>
+    <p style={{ color: payload[0].payload.color }} className="font-bold">{payload[0].value} suara</p>
+  </div>
+) : null
+
+const CustomPieTip = ({ active, payload }: any) => active && payload?.length ? (
+  <div className="glass-card rounded-xl p-3 border border-white/20 shadow-2xl text-sm">
+    <p className="text-white font-semibold">{payload[0].name}</p>
+    <p style={{ color: payload[0].payload.color }} className="font-bold">{payload[0].value} suara ({payload[0].payload.pct}%)</p>
+  </div>
+) : null
 
 export default function RealCountPage() {
-  const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes)
-  const totalVotes = sortedCandidates.reduce((sum, c) => sum + c.votes, 0)
-
-  // Data untuk chart
-  const chartData = sortedCandidates.map(c => ({
-    name: `${c.number}. ${c.name.split(' ')[0]}`,
-    votes: c.votes,
-    percentage: Math.round((c.votes / totalVotes) * 100)
-  }))
-
-  const COLORS = ['#9333ea', '#7c3aed', '#6d28d9', '#5b21b6']
+  const sorted = [...CANDIDATES].sort((a, b) => b.votes - a.votes)
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Real Count Pemilu OSIS 2026</h1>
-        <p className="text-gray-600 mt-2">Hasil voting real-time yang diperbarui secara berkala</p>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <Vote className="w-4 h-4 text-violet-400" />
+          <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Real Count Voting</h1>
+            <p className="text-white/40 mt-1">Hasil voting real-time yang diperbarui secara berkala</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-xs text-green-400 font-medium">LIVE</span>
+          </div>
+        </div>
       </div>
 
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <Users className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Pemilih</p>
-                <p className="text-2xl font-bold text-gray-900">{votingSession.totalVoters}</p>
-              </div>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { icon: Users, label: 'Total Pemilih', value: TOTAL_VOTERS, color: 'from-blue-500 to-blue-400' },
+          { icon: TrendingUp, label: 'Sudah Memilih', value: totalVotes, color: 'from-green-500 to-emerald-400' },
+          { icon: Clock, label: 'Partisipasi', value: `${participation}%`, color: 'from-violet-500 to-purple-400' },
+        ].map(s => (
+          <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+              <s.icon className="w-6 h-6 text-white" />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-2xl font-bold text-white">{s.value}</p>
+              <p className="text-sm text-white/50">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <TrendingUp className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Sudah Memilih</p>
-                <p className="text-2xl font-bold text-gray-900">{votingSession.votedCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <Clock className="w-8 h-8 text-orange-600" />
-              <div>
-                <p className="text-sm text-gray-600">Partisipasi</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {Math.round((votingSession.votedCount / votingSession.totalVoters) * 100)}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Progress */}
+      <div className="glass-card rounded-2xl p-5">
+        <div className="flex justify-between text-sm mb-2">
+          <span className="text-white/50">Progress Partisipasi</span>
+          <span className="font-semibold text-white">{participation}%</span>
+        </div>
+        <div className="w-full bg-white/[0.06] rounded-full h-3">
+          <div
+            className="bg-gradient-to-r from-violet-500 to-blue-500 h-3 rounded-full transition-all duration-1000"
+            style={{ width: `${participation}%` }}
+          />
+        </div>
+        <p className="text-xs text-white/30 mt-2">{totalVotes} dari {TOTAL_VOTERS} siswa telah memberikan suara</p>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Bar Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Perolehan Suara per Kandidat</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `${value} suara`} />
-                  <Bar dataKey="votes" fill="#9333ea" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-4 h-4 text-white/40" />
+            <h3 className="font-semibold text-white text-sm">Perolehan Suara per Kandidat</h3>
+          </div>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ bottom: 20 }}>
+                <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} angle={-20} textAnchor="end" height={45} />
+                <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomBarTip />} />
+                <Bar dataKey="votes" radius={[6, 6, 0, 0]}>
+                  {chartData.map((e, i) => <Cell key={i} fill={e.color} fillOpacity={0.85} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        {/* Pie Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribusi Suara (%)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={(entry) => `${entry.percentage}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="votes"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value} suara`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Vote className="w-4 h-4 text-white/40" />
+            <h3 className="font-semibold text-white text-sm">Distribusi Suara (%)</h3>
+          </div>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={chartData} cx="50%" cy="50%" outerRadius={80} dataKey="votes" nameKey="name" label={e => e.pct > 0 ? `${e.pct}%` : ''} labelLine={false}>
+                  {chartData.map((e, i) => <Cell key={i} fill={e.color} fillOpacity={0.85} />)}
+                </Pie>
+                <Tooltip content={<CustomPieTip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {totalVotes === 0 && (
+            <p className="text-center text-white/20 text-sm -mt-4">Belum ada suara masuk</p>
+          )}
+        </div>
       </div>
 
-      {/* Detailed Results Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detail Perolehan Suara</CardTitle>
-          <CardDescription>Ranking kandidat berdasarkan jumlah suara</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Ranking</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Nomor</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Nama</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Kelas</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Suara</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Persentase</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Grafik</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {sortedCandidates.map((candidate, index) => {
-                  const percentage = Math.round((candidate.votes / totalVotes) * 100)
-                  return (
-                    <tr key={candidate.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center">
-                          {index === 0 && <span className="text-2xl">🥇</span>}
-                          {index === 1 && <span className="text-2xl">🥈</span>}
-                          {index === 2 && <span className="text-2xl">🥉</span>}
-                          {index > 2 && <span className="font-semibold text-gray-600">#{index + 1}</span>}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <Badge className="bg-purple-100 text-purple-700 font-bold">
-                          {candidate.number}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="font-medium text-gray-900">{candidate.name}</p>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-600">
-                        {candidate.kelas}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <p className="font-bold text-gray-900">{candidate.votes}</p>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <span className="font-medium text-purple-600">{percentage}%</span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="w-32 h-6 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Result table */}
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.06]">
+          <h3 className="font-semibold text-white text-sm">Detail Perolehan Suara</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                {['Rank', 'No', 'Nama Kandidat', 'Kelas', 'Suara', '%', 'Progress'].map((h, i) => (
+                  <th key={i} className={`px-4 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider ${i <= 1 ? 'text-center' : i >= 4 ? 'text-right' : 'text-left'}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((c, i) => {
+                const pct = totalVotes > 0 ? Math.round((c.votes / totalVotes) * 100) : 0
+                return (
+                  <tr key={c.id} className="border-b border-white/[0.04] hover:bg-white/[0.03] transition">
+                    <td className="px-4 py-4 text-center text-sm">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-white/30">#{i+1}</span>}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: `${c.color}20`, color: c.color }}>
+                        #{c.number}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ background: c.color }} />
+                        <span className="font-medium text-white text-sm">{c.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-white/40">{c.kelas}</td>
+                    <td className="px-4 py-4 text-right font-bold text-white">{c.votes}</td>
+                    <td className="px-4 py-4 text-right font-semibold" style={{ color: c.color }}>{pct}%</td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="w-28 h-2 bg-white/[0.06] rounded-full overflow-hidden ml-auto">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: c.color }} />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* Information */}
-      <Card className="mt-6 bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="text-blue-900">Informasi Real Count</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-gray-700 space-y-2">
-          <p>• Data real count diperbarui setiap saat ada suara masuk</p>
-          <p>• Voting dilakukan secara anonim untuk menjaga integritas hasil</p>
-          <p>• Setiap suara hanya dihitung satu kali per akun</p>
-          <p>• Hasil akhir akan diumumkan setelah voting ditutup</p>
-        </CardContent>
-      </Card>
+      {/* Info */}
+      <div className="glass-card rounded-2xl p-5 border-blue-500/20 bg-blue-500/5">
+        <p className="text-sm font-semibold text-blue-400 mb-3">ℹ️ Informasi Real Count</p>
+        <ul className="space-y-1.5 text-sm text-white/50">
+          <li>• Data real count diperbarui setiap saat ada suara masuk</li>
+          <li>• Voting dilakukan secara anonim untuk menjaga integritas</li>
+          <li>• Setiap suara hanya dihitung satu kali per akun</li>
+          <li>• Hasil akhir akan diumumkan setelah voting ditutup</li>
+        </ul>
+      </div>
     </div>
   )
 }

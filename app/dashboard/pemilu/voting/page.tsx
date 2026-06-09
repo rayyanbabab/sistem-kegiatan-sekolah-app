@@ -1,255 +1,190 @@
 'use client'
 
 import { useState } from 'react'
-import { candidates, votingSession } from '@/lib/mockData'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/context/AuthContext'
-import { AlertCircle, CheckCircle2, Lock } from 'lucide-react'
+import { Vote, CheckCircle2, Lock, AlertCircle, ArrowRight, Users } from 'lucide-react'
+import Link from 'next/link'
+
+const CANDIDATES = [
+  { id: '1', number: 1, name: 'Siti Nurhaliza', kelas: 'XII IPA 1', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti', visiMisi: 'Menciptakan OSIS yang lebih inklusif dan responsif terhadap kebutuhan siswa. Fokus pada peningkatan program akademik dan non-akademik.', color: 'from-blue-500 to-cyan-500' },
+  { id: '2', number: 2, name: 'Budi Santoso', kelas: 'XII IPS 2', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi', visiMisi: 'Membangun OSIS yang kuat dalam mengorganisir kegiatan sekolah. Meningkatkan partisipasi siswa dalam setiap program.', color: 'from-violet-500 to-purple-500' },
+  { id: '3', number: 3, name: 'Rina Puspita', kelas: 'XII IPA 2', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rina', visiMisi: 'OSIS yang transparan dan akuntabel. Mewujudkan program-program yang bermanfaat bagi seluruh siswa.', color: 'from-pink-500 to-rose-500' },
+  { id: '4', number: 4, name: 'Hendra Wijaya', kelas: 'XII IPA 3', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hendra', visiMisi: 'Memajukan semangat gotong royong dan kebersamaan di sekolah. OSIS yang dekat dengan siswa.', color: 'from-amber-500 to-orange-500' },
+]
 
 export default function VotingPage() {
   const { hasVoted, setHasVoted } = useAuth()
-  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
-  const [confirmStep, setConfirmStep] = useState(false)
-  const [votingComplete, setVotingComplete] = useState(hasVoted)
+  const [selected, setSelected] = useState<string | null>(null)
+  const [step, setStep] = useState<'select' | 'confirm' | 'done'>(hasVoted ? 'done' : 'select')
 
-  const handleSelectCandidate = (candidateId: string) => {
-    if (!hasVoted) {
-      setSelectedCandidate(candidateId)
-      setConfirmStep(true)
-    }
-  }
+  const selectedCand = CANDIDATES.find(c => c.id === selected)
 
-  const handleConfirmVote = () => {
-    if (selectedCandidate) {
-      setVotingComplete(true)
-      setHasVoted(true)
-      setConfirmStep(false)
-    }
-  }
-
-  const handleCancel = () => {
-    setConfirmStep(false)
-    setSelectedCandidate(null)
-  }
-
-  // Status: Voting Closed
-  if (votingSession.status === 'closed') {
+  // Already voted
+  if (step === 'done') {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Voting Pemilu OSIS 2026</h1>
-          <p className="text-gray-600 mt-2">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="glass-card rounded-3xl p-12 text-center border-green-500/20 bg-green-500/5">
+          <div className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500/30 flex items-center justify-center mx-auto mb-5">
+            <CheckCircle2 className="w-10 h-10 text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Suara Berhasil Dicatat!</h2>
+          <p className="text-white/50 mb-8">Terima kasih telah berpartisipasi dalam Pemilu OSIS 2026. Pilihan Anda telah tersimpan dengan aman.</p>
+          <Link href="/dashboard/pemilu/real-count">
+            <button className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold rounded-2xl transition shadow-lg shadow-blue-500/25">
+              Lihat Hasil Real Count <ArrowRight className="w-4 h-4" />
+            </button>
+          </Link>
         </div>
-
-        <Card className="bg-gray-50 border-gray-300">
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Voting Telah Ditutup</h2>
-              <p className="text-gray-600">Terima kasih telah berpartisipasi dalam voting Pemilu OSIS 2026</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     )
   }
 
-  // Status: Already Voted
-  if (votingComplete) {
+  // Confirm step
+  if (step === 'confirm' && selectedCand) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Voting Pemilu OSIS 2026</h1>
-          <p className="text-gray-600 mt-2">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
+      <div className="p-6 max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Konfirmasi Pilihan</h1>
+          <p className="text-white/40 mt-1">Pastikan pilihan Anda sudah benar sebelum dikonfirmasi</p>
         </div>
 
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600 flex-shrink-0 mt-1" />
+        <div className="glass-card rounded-2xl overflow-hidden">
+          <div className={`h-1.5 bg-gradient-to-r ${selectedCand.color}`} />
+          <div className="p-6">
+            <div className="flex gap-5">
+              <div className="relative flex-shrink-0">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-white/10">
+                  <img src={selectedCand.photo} alt={selectedCand.name} className="w-full h-full object-cover" />
+                </div>
+                <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br ${selectedCand.color} flex items-center justify-center shadow-lg`}>
+                  <span className="text-white font-bold text-sm">{selectedCand.number}</span>
+                </div>
+              </div>
               <div>
-                <h2 className="text-lg font-bold text-green-900 mb-2">Terima Kasih!</h2>
-                <p className="text-green-800">
-                  Suara Anda telah berhasil dicatat. Anda tidak dapat mengubah pilihan setelah ini.
+                <h2 className="text-2xl font-bold text-white">{selectedCand.name}</h2>
+                <p className="text-white/40 text-sm mt-1 flex items-center gap-1">
+                  <Users className="w-3 h-3" /> {selectedCand.kelas}
                 </p>
+                <div className="mt-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                  <p className="text-xs text-white/30 mb-1 uppercase tracking-wider">Visi & Misi</p>
+                  <p className="text-sm text-white/60 leading-relaxed">{selectedCand.visiMisi}</p>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Button
-          onClick={() => window.location.href = '/dashboard/pemilu/real-count'}
-          className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700"
-        >
-          Lihat Hasil Real Count
-        </Button>
-      </div>
-    )
-  }
-
-  // Confirmation Step
-  if (confirmStep && selectedCandidate) {
-    const selected = candidates.find(c => c.id === selectedCandidate)
-
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Konfirmasi Pilihan</h1>
-          <p className="text-gray-600 mt-2">Yakin dengan pilihan Anda?</p>
+          </div>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex gap-6 mb-6">
-              <div className="w-32 h-32 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0">
-                <img
-                  src={selected?.photo}
-                  alt={selected?.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900">{selected?.name}</h2>
-                  <Badge className="bg-purple-100 text-purple-700 font-bold">
-                    #{selected?.number}
-                  </Badge>
-                </div>
-                <p className="text-gray-600 mb-4">{selected?.kelas}</p>
-                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Visi Misi:</p>
-                  <p className="text-sm text-gray-600">{selected?.visiMisi}</p>
-                </div>
-              </div>
-            </div>
+        <div className="glass-card rounded-2xl p-4 border-amber-500/20 bg-amber-500/5">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-400/80">
+              Setelah dikonfirmasi, pilihan <strong>tidak dapat diubah</strong>. Pastikan Anda sudah yakin dengan pilihan ini.
+            </p>
+          </div>
+        </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <div className="flex gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                <p className="text-sm text-blue-800">
-                  Setelah Anda mengkonfirmasi, pilihan tidak dapat diubah. Pastikan Anda sudah yakin dengan pilihan ini.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="flex-1"
-              >
-                Kembali
-              </Button>
-              <Button
-                onClick={handleConfirmVote}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                Konfirmasi Pilihan
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setStep('select')}
+            className="flex-1 py-3 rounded-2xl border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.05] text-sm font-medium transition"
+          >
+            ← Kembali
+          </button>
+          <button
+            onClick={() => { setHasVoted(true); setStep('done') }}
+            className={`flex-1 py-3 rounded-2xl bg-gradient-to-r ${selectedCand.color} text-white font-semibold shadow-lg hover:opacity-90 transition`}
+          >
+            ✓ Konfirmasi Pilihan
+          </button>
+        </div>
       </div>
     )
   }
 
-  // Voting Step - Select Candidate
+  // Select step
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Voting Pemilu OSIS 2026</h1>
-        <p className="text-gray-600 mt-2">Pilih kandidat yang Anda inginkan untuk menjadi ketua OSIS</p>
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <Vote className="w-4 h-4 text-violet-400" />
+          <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
+        </div>
+        <h1 className="text-3xl font-bold text-white">Voting Pemilu OSIS</h1>
+        <p className="text-white/40 mt-1">Pilih satu kandidat yang Anda percaya untuk memimpin OSIS</p>
       </div>
 
-      {/* Voting Status */}
-      <Card className="mb-6 bg-purple-50 border-purple-200">
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="font-semibold text-gray-900 mb-2">Status Voting</p>
-              <p className="text-sm text-gray-600">
-                {votingSession.votedCount} dari {votingSession.totalVoters} siswa telah memilih
-              </p>
+      {/* Status bar */}
+      <div className="glass-card rounded-2xl p-5 border-violet-500/20 bg-violet-500/5">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs text-green-400 font-medium">Voting Aktif</span>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-purple-600">
-                {Math.round((votingSession.votedCount / votingSession.totalVoters) * 100)}%
-              </p>
-              <p className="text-xs text-gray-600">Partisipasi</p>
-            </div>
+            <p className="text-sm text-white/50">Sesi voting: 20 Jun 2026 · 08.00 – 16.00 WIB</p>
           </div>
-          <div className="mt-4 w-full bg-purple-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full"
-              style={{ width: `${(votingSession.votedCount / votingSession.totalVoters) * 100}%` }}
-            />
+          <div className="text-right">
+            <p className="text-2xl font-bold text-violet-400">0%</p>
+            <p className="text-xs text-white/30">Partisipasi</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="w-full bg-white/[0.06] rounded-full h-1.5">
+          <div className="bg-gradient-to-r from-violet-500 to-purple-500 h-1.5 rounded-full" style={{ width: '0%' }} />
+        </div>
+      </div>
 
-      {/* Candidates Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-        {candidates.map((candidate) => (
-          <button
-            key={candidate.id}
-            onClick={() => handleSelectCandidate(candidate.id)}
-            className="text-left"
-          >
-            <Card className={`hover:shadow-lg transition cursor-pointer ${
-              selectedCandidate === candidate.id ? 'border-purple-600 border-2' : ''
-            }`}>
-              <CardContent className="pt-6">
-                <div className="flex gap-4">
-                  {/* Photo */}
-                  <div className="w-24 h-24 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0">
-                    <img
-                      src={candidate.photo}
-                      alt={candidate.name}
-                      className="w-full h-full object-cover"
-                    />
+      {/* Candidates */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {CANDIDATES.map((c) => {
+          const isSelected = selected === c.id
+          return (
+            <button
+              key={c.id}
+              onClick={() => setSelected(c.id)}
+              className={`text-left glass-card rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5 ${isSelected ? 'border-violet-500/50 shadow-lg shadow-violet-500/10' : 'hover:border-white/20'}`}
+            >
+              <div className={`h-1 bg-gradient-to-r ${c.color} ${isSelected ? 'opacity-100' : 'opacity-30'}`} />
+              <div className="p-5 flex gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className={`w-16 h-16 rounded-xl overflow-hidden border-2 ${isSelected ? 'border-violet-400' : 'border-white/10'} transition-colors`}>
+                    <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
                   </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-900">{candidate.name}</h3>
-                      <Badge className="bg-purple-100 text-purple-700 font-bold text-xs">
-                        #{candidate.number}
-                      </Badge>
+                  <div className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-lg bg-gradient-to-br ${c.color} flex items-center justify-center`}>
+                    <span className="text-white font-bold text-xs">{c.number}</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-bold text-white text-base">{c.name}</h3>
+                      <p className="text-xs text-white/40">{c.kelas}</p>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{candidate.kelas}</p>
-                    <p className="text-xs text-gray-600 line-clamp-2">{candidate.visiMisi}</p>
-                  </div>
-
-                  {/* Selection Indicator */}
-                  {selectedCandidate === candidate.id && (
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                    {isSelected && (
+                      <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center flex-shrink-0">
                         <CheckCircle2 className="w-4 h-4 text-white" />
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <p className="text-xs text-white/50 mt-2 line-clamp-2 leading-relaxed">{c.visiMisi}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </button>
-        ))}
+              </div>
+            </button>
+          )
+        })}
       </div>
 
-      {/* Important Notes */}
-      <Card className="mt-6 bg-yellow-50 border-yellow-200">
-        <CardHeader>
-          <CardTitle className="text-yellow-900 text-base">Peraturan Voting</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-gray-700 space-y-2">
-          <p>• Voting dilakukan secara anonim dan rahasia</p>
-          <p>• Setiap akun hanya bisa memilih satu kali</p>
-          <p>• Tidak dapat mengubah pilihan setelah dikonfirmasi</p>
-          <p>• Voting akan ditutup pada {new Date(votingSession.endTime).toLocaleString('id-ID')}</p>
-        </CardContent>
-      </Card>
+      {/* Submit */}
+      <button
+        onClick={() => selected && setStep('confirm')}
+        disabled={!selected}
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold text-base shadow-xl shadow-violet-500/20 transition disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        {selected ? `Lanjutkan → Pilih Kandidat #${CANDIDATES.find(c => c.id === selected)?.number}` : 'Pilih salah satu kandidat'}
+      </button>
+
+      <div className="glass-card rounded-2xl p-4 border-blue-500/20 bg-blue-500/5">
+        <p className="text-xs text-white/40 text-center">🔒 Voting bersifat anonim · Satu akun satu suara · Pilihan tidak bisa diubah</p>
+      </div>
     </div>
   )
 }

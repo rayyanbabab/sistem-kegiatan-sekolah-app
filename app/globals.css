@@ -1,92 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
+/* ─── CSS Variables ─────────────────────────────────────────────── */
 @layer base {
   :root {
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
-    --background: 0 0% 99%;
-    --foreground: 220 13% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 12%;
+    --font-sans: 'Inter', sans-serif;
+
+    /* Dark mode defaults */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 13% 91%;
-    --secondary-foreground: 220 13% 12%;
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 13% 52%;
-    --accent: 280 85% 65%;
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 210 40% 90%;
+    --muted: 222 47% 14%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 263 70% 65%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 222 47% 16%;
+    --input: 222 47% 14%;
     --ring: 217 91% 60%;
+    --radius: 0.875rem;
     --chart-1: 217 91% 60%;
-    --chart-2: 280 85% 65%;
+    --chart-2: 263 70% 65%;
     --chart-3: 190 95% 45%;
     --chart-4: 160 84% 54%;
     --chart-5: 30 84% 61%;
-    --radius: 0.75rem;
-    --sidebar-background: 217 91% 60%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 280 85% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 91% 45%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 217 91% 50%;
-    --sidebar-ring: 280 85% 65%;
+
+    /* Custom design tokens — dark */
+    --glass-bg:           rgba(255, 255, 255, 0.05);
+    --glass-border:       rgba(255, 255, 255, 0.08);
+    --glass-hover-border: rgba(255, 255, 255, 0.20);
+    --glass-shadow:       0 20px 40px rgba(0, 0, 0, 0.35);
+    --subtle-bg:          rgba(255, 255, 255, 0.035);
+    --subtle-hover-bg:    rgba(255, 255, 255, 0.06);
+    --subtle-border:      rgba(255, 255, 255, 0.07);
+    --text-primary:       rgba(255, 255, 255, 1);
+    --text-secondary:     rgba(255, 255, 255, 0.60);
+    --text-muted:         rgba(255, 255, 255, 0.40);
+    --text-faint:         rgba(255, 255, 255, 0.25);
+    --sidebar-surface:    hsl(222, 47%, 7%);
+    --nav-border:         rgba(255, 255, 255, 0.06);
+    --orb-1:              hsl(217 91% 60% / 0.07);
+    --orb-2:              hsl(263 70% 65% / 0.07);
   }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+  :root.light {
+    /* Light mode */
+    --background: 220 20% 96%;
+    --foreground: 220 25% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
+    --primary: 217 91% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 25% 20%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 48%;
+    --accent: 263 70% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 220 14% 86%;
+    --input: 220 14% 92%;
+    --ring: 217 91% 52%;
+
+    /* Custom design tokens — light */
+    --glass-bg:           rgba(255, 255, 255, 0.80);
+    --glass-border:       rgba(0, 0, 0, 0.07);
+    --glass-hover-border: rgba(0, 0, 0, 0.16);
+    --glass-shadow:       0 4px 24px rgba(0, 0, 0, 0.08);
+    --subtle-bg:          rgba(0, 0, 0, 0.03);
+    --subtle-hover-bg:    rgba(0, 0, 0, 0.055);
+    --subtle-border:      rgba(0, 0, 0, 0.07);
+    --text-primary:       hsl(220, 25%, 10%);
+    --text-secondary:     hsl(220, 15%, 35%);
+    --text-muted:         hsl(220, 10%, 52%);
+    --text-faint:         hsl(220, 10%, 68%);
+    --sidebar-surface:    hsl(220, 20%, 99%);
+    --nav-border:         rgba(0, 0, 0, 0.07);
+    --orb-1:              hsl(217 91% 60% / 0.06);
+    --orb-2:              hsl(263 70% 65% / 0.04);
   }
 }
 
+/* ─── Base ───────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border;
+  * { @apply border-border; }
+  html {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, var(--orb-1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, var(--orb-2) 0%, transparent 50%);
+    background-attachment: fixed;
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 }
+
+/* ─── Utility Classes ─────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Glass card — adapts via CSS vars */
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .glass-card:hover {
+    border-color: var(--glass-hover-border);
+  }
+
+  /* Sidebar */
+  .sidebar-bg {
+    background: var(--sidebar-surface);
+    border-right: 1px solid var(--nav-border);
+    transition: background 0.3s ease;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent;
+  }
+
+  /* Scrollbar */
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.25);
+    border-radius: 9999px;
+  }
+}
+
+/* ─── Light Mode Overrides ─────────────────────────────────────────
+   Override hardcoded white-opacity Tailwind classes used throughout
+   the app to work with a light background.
+   NOTE: class selectors must use CSS escaping for / and [ ] chars.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Text colours */
+:root.light .text-white          { color: var(--text-primary)   !important; }
+:root.light .text-white\/80      { color: var(--text-primary)   !important; }
+:root.light .text-white\/70      { color: var(--text-secondary) !important; }
+:root.light .text-white\/60      { color: var(--text-secondary) !important; }
+:root.light .text-white\/50      { color: var(--text-muted)     !important; }
+:root.light .text-white\/40      { color: var(--text-muted)     !important; }
+:root.light .text-white\/30      { color: var(--text-faint)     !important; }
+:root.light .text-white\/20      { color: var(--text-faint)     !important; }
+:root.light .text-white\/10      { color: rgba(0,0,0,0.10)      !important; }
+
+/* Hover text */
+:root.light .hover\:text-white:hover     { color: var(--text-primary)   !important; }
+:root.light .hover\:text-white\/60:hover { color: var(--text-secondary) !important; }
+
+/* Subtle background fills */
+:root.light .bg-white\/\[0\.03\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/\[0\.04\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/\[0\.05\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/\[0\.06\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/\[0\.07\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/\[0\.08\]  { background-color: var(--subtle-bg) !important; }
+:root.light .bg-white\/5           { background-color: rgba(0,0,0,0.03) !important; }
+:root.light .bg-white\/10          { background-color: rgba(0,0,0,0.05) !important; }
+
+/* Hover background fills */
+:root.light .hover\:bg-white\/\[0\.03\]:hover { background-color: var(--subtle-hover-bg) !important; }
+:root.light .hover\:bg-white\/\[0\.05\]:hover { background-color: var(--subtle-hover-bg) !important; }
+:root.light .hover\:bg-white\/\[0\.06\]:hover { background-color: var(--subtle-hover-bg) !important; }
+:root.light .hover\:bg-white\/\[0\.08\]:hover { background-color: var(--subtle-hover-bg) !important; }
+:root.light .hover\:bg-white\/10:hover         { background-color: rgba(0,0,0,0.05)      !important; }
+
+/* Border colours */
+:root.light .border-white\/\[0\.04\] { border-color: var(--subtle-border)  !important; }
+:root.light .border-white\/\[0\.06\] { border-color: var(--subtle-border)  !important; }
+:root.light .border-white\/\[0\.07\] { border-color: var(--subtle-border)  !important; }
+:root.light .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.08)      !important; }
+:root.light .border-white\/\[0\.10\] { border-color: rgba(0,0,0,0.09)      !important; }
+:root.light .border-white\/10         { border-color: rgba(0,0,0,0.09)      !important; }
+:root.light .border-white\/20         { border-color: rgba(0,0,0,0.12)      !important; }
+
+/* Divide colours */
+:root.light .divide-white\/\[0\.04\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--subtle-border) !important;
+}
+
+/* Navbar backdrop on landing/login */
+:root.light .bg-background\/80 {
+  background-color: rgba(245, 246, 250, 0.88) !important;
+}
+
+/* Active sidebar link (blue-500/15 bg looks washed in light) */
+:root.light .bg-blue-500\/15 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+:root.light .bg-blue-500\/20 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* Decorative orb */
+:root.light .bg-blue-600\/20,
+:root.light .bg-violet-600\/20 {
+  opacity: 0.4;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }

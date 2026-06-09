@@ -2,331 +2,328 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ArrowRight, Trophy, BarChart3, Calendar, Users, Lock, Zap } from 'lucide-react'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import { ArrowRight, Trophy, BarChart3, Calendar, Users, Lock, Zap, Shield, Star, CheckCircle } from 'lucide-react'
 
 export default function LandingPage() {
   const features = [
-    {
-      icon: Trophy,
-      title: 'Manajemen Kompetisi',
-      description: 'Kelola Classmeeting dengan pendaftaran, jadwal, bracket, dan leaderboard real-time'
-    },
-    {
-      icon: Lock,
-      title: 'Voting Aman',
-      description: 'Sistem voting OSIS dengan one-time voting, konfirmasi, dan keamanan berbasis NIS'
-    },
-    {
-      icon: BarChart3,
-      title: 'Real Count Voting',
-      description: 'Monitoring hasil voting real-time dengan grafik dan persentase suara'
-    },
-    {
-      icon: Calendar,
-      title: 'Event Management',
-      description: 'Buat dan kelola berbagai event sekolah dalam satu dashboard'
-    },
-    {
-      icon: Users,
-      title: 'Kolaborasi Tim',
-      description: 'Koordinasi tim, pembagian peran, dan verifikasi peserta otomatis'
-    },
-    {
-      icon: Zap,
-      title: 'Pengumuman Instan',
-      description: 'Broadcast pengumuman ke seluruh siswa dengan kategori yang terorganisir'
-    }
-  ]
-
-  const stats = [
-    { label: 'Modul Utama', value: '4' },
-    { label: 'Role System', value: '5' },
-    { label: 'Fitur Lengkap', value: '20+' }
+    { icon: Trophy, title: 'Manajemen Kompetisi', description: 'Kelola Classmeeting dengan pendaftaran, jadwal, dan leaderboard real-time antar kelas.', color: 'from-orange-500 to-amber-500' },
+    { icon: Lock, title: 'Voting Aman', description: 'Sistem voting OSIS dengan one-time voting dan keamanan berbasis NIS.', color: 'from-blue-500 to-cyan-500' },
+    { icon: BarChart3, title: 'Real Count Voting', description: 'Monitoring hasil voting real-time dengan grafik dan persentase suara kandidat.', color: 'from-violet-500 to-purple-500' },
+    { icon: Calendar, title: 'Event Management', description: 'Buat dan kelola berbagai event sekolah dalam satu dashboard terpadu.', color: 'from-green-500 to-emerald-500' },
+    { icon: Users, title: 'Kolaborasi Tim', description: 'Koordinasi tim, pembagian peran, dan verifikasi peserta secara otomatis.', color: 'from-pink-500 to-rose-500' },
+    { icon: Zap, title: 'Pengumuman Instan', description: 'Broadcast pengumuman ke seluruh siswa dengan kategori yang terorganisir.', color: 'from-yellow-500 to-orange-500' },
   ]
 
   const roles = [
-    { name: 'Super Admin', color: 'from-blue-600 to-blue-400' },
-    { name: 'Panitia Event', color: 'from-purple-600 to-purple-400' },
-    { name: 'Ketua Kelas', color: 'from-cyan-600 to-cyan-400' },
-    { name: 'Kandidat OSIS', color: 'from-pink-600 to-pink-400' },
-    { name: 'Siswa', color: 'from-green-600 to-green-400' }
+    { name: 'Super Admin', desc: 'Kelola semua event & user', icon: Shield, color: 'from-blue-600 to-blue-400' },
+    { name: 'Panitia Event', desc: 'Verifikasi & input hasil', icon: CheckCircle, color: 'from-violet-600 to-violet-400' },
+    { name: 'Ketua Kelas', desc: 'Daftar & kelola tim', icon: Star, color: 'from-cyan-600 to-cyan-400' },
+    { name: 'Kandidat OSIS', desc: 'Edit profil kampanye', icon: Trophy, color: 'from-pink-600 to-pink-400' },
+    { name: 'Siswa', desc: 'Vote & lihat jadwal', icon: Users, color: 'from-green-600 to-green-400' },
+  ]
+
+  const modules = [
+    { title: 'Classmeeting', icon: Trophy, color: 'from-orange-500 to-red-500', items: ['Pendaftaran & verifikasi peserta', 'Jadwal pertandingan otomatis', 'Bracket tournament', 'Leaderboard real-time'] },
+    { title: 'Pemilu OSIS', icon: Lock, color: 'from-blue-500 to-cyan-500', items: ['Profil kandidat dengan visi misi', 'Voting aman berbasis NIS', 'One-time voting protection', 'Real-time vote counting'] },
+    { title: 'Event Management', icon: Calendar, color: 'from-purple-500 to-pink-500', items: ['Buat event sekolah dinamis', 'Kelola status event', 'Verifikasi peserta', 'Tracking hasil'] },
+    { title: 'Pengumuman', icon: Zap, color: 'from-green-500 to-emerald-500', items: ['Broadcast instan ke siswa', 'Kategori pengumuman', 'Archive & search', 'Notifikasi real-time'] },
   ]
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed w-full top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
+      <nav className="fixed w-full top-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
               <span className="text-white font-bold text-sm">SM</span>
             </div>
-            <span className="font-bold text-gray-900">SMKS Digital</span>
+            <span className="font-bold text-white text-lg">SMKS Digital</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-gray-700 hover:text-blue-600 transition">Fitur</a>
-            <a href="#roles" className="text-gray-700 hover:text-blue-600 transition">Role System</a>
-            <a href="#stats" className="text-gray-700 hover:text-blue-600 transition">Modul</a>
+            {['#features', '#modules', '#roles'].map((href, i) => (
+              <a key={href} href={href} className="text-sm text-white/60 hover:text-white transition-colors">
+                {['Fitur', 'Modul', 'Role'][i]}
+              </a>
+            ))}
           </div>
-          <Link href="/auth/login">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              Masuk Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link href="/auth/login">
+              <Button className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white border-0 shadow-lg shadow-blue-500/25 font-medium">
+                Masuk Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-200 to-blue-100 rounded-full opacity-30 blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-200 to-purple-100 rounded-full opacity-30 blur-3xl"></div>
+      {/* Hero */}
+      <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Orbs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
-          <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Platform Manajemen Kegiatan Sekolah Modern
-          </Badge>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 mb-8">
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span className="text-sm text-blue-400 font-medium">Platform Manajemen Kegiatan Sekolah</span>
+          </div>
 
-          <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-6 text-balance">
-            Kelola Semua Kegiatan Sekolah Dalam Satu Tempat
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight text-balance">
+            Kelola Semua Kegiatan
+            <br />
+            <span className="gradient-text">Sekolah Digital</span>
           </h1>
 
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto text-balance">
-            Platform digital terpadu untuk Classmeeting, Pemilu OSIS, Event Management, dan Pengumuman Sekolah dengan sistem keamanan berbasis NIS dan role-based access control.
+          <p className="text-lg sm:text-xl text-white/50 mb-10 max-w-2xl mx-auto text-balance leading-relaxed">
+            Platform terpadu untuk Classmeeting, Pemilu OSIS, Event Management, dan Pengumuman Sekolah dengan sistem keamanan role-based berbasis NIS.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
             <Link href="/auth/login">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white border-0 shadow-2xl shadow-blue-500/30 gap-2 px-8 font-semibold text-base">
                 Mulai Sekarang <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <a href="#features">
-              <Button size="lg" variant="outline" className="gap-2">
-                Pelajari Fitur
+              <Button size="lg" variant="outline" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 bg-transparent gap-2 px-8 text-base">
+                Lihat Fitur
               </Button>
             </a>
           </div>
 
           {/* Stats */}
-          <div id="stats" className="grid grid-cols-3 gap-4 sm:gap-8 mt-16">
-            {stats.map((stat) => (
-              <div key={stat.label} className="p-4 rounded-lg bg-white/60 backdrop-blur border border-gray-200">
-                <div className="text-3xl font-bold text-blue-600">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
+          <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+            {[
+              { value: '4', label: 'Modul Utama' },
+              { value: '5', label: 'Role System' },
+              { value: '20+', label: 'Fitur' },
+            ].map((stat) => (
+              <div key={stat.label} className="glass-card rounded-2xl p-4 text-center">
+                <div className="text-3xl font-bold gradient-text">{stat.value}</div>
+                <div className="text-xs text-white/40 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Features */}
+      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Fitur Lengkap dan Terintegrasi</h2>
-            <p className="text-xl text-gray-600">Semua yang Anda butuhkan untuk mengelola kegiatan sekolah</p>
+            <h2 className="text-4xl font-bold text-white mb-4">Fitur Lengkap & Terintegrasi</h2>
+            <p className="text-white/50 text-lg">Semua yang dibutuhkan untuk mengelola kegiatan sekolah</p>
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, idx) => {
               const Icon = feature.icon
               return (
-                <Card key={idx} className="border border-gray-200 hover:border-blue-300 hover:shadow-lg transition">
-                  <CardHeader>
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900">{feature.title}</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-gray-600">{feature.description}</CardDescription>
-                  </CardContent>
-                </Card>
+                <div key={idx} className="glass-card rounded-2xl p-6 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">{feature.title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{feature.description}</p>
+                </div>
               )
             })}
           </div>
         </div>
       </section>
 
-      {/* Modules Showcase */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Modules */}
+      <section id="modules" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">4 Modul Utama</h2>
-            <p className="text-xl text-gray-600">Sistem terintegrasi untuk berbagai kebutuhan sekolah</p>
+            <h2 className="text-4xl font-bold text-white mb-4">4 Modul Utama</h2>
+            <p className="text-white/50 text-lg">Sistem terintegrasi untuk berbagai kebutuhan sekolah</p>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <Trophy className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Classmeeting</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Pendaftaran & verifikasi peserta</p>
-                <p>• Jadwal pertandingan otomatis</p>
-                <p>• Bracket tournament visualization</p>
-                <p>• Leaderboard real-time</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <Lock className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Pemilu OSIS</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Profil kandidat dengan visi misi</p>
-                <p>• Voting aman berbasis NIS</p>
-                <p>• One-time voting protection</p>
-                <p>• Real-time vote counting</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Calendar className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Event Management</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Buat event sekolah dinamis</p>
-                <p>• Kelola status event</p>
-                <p>• Verifikasi peserta</p>
-                <p>• Tracking peserta & hasil</p>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <Users className="w-24 h-24 text-white opacity-20" />
-              </div>
-              <CardHeader>
-                <h3 className="text-2xl font-bold text-gray-900">Pengumuman</h3>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-600">
-                <p>• Broadcast instan ke siswa</p>
-                <p>• Kategori pengumuman</p>
-                <p>• Notifikasi real-time</p>
-                <p>• Archive & search</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Role System */}
-      <section id="roles" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Sistem Role Fleksibel</h2>
-            <p className="text-xl text-gray-600">Setiap pengguna memiliki akses sesuai perannya</p>
-          </div>
-
-          <div className="grid md:grid-cols-5 gap-4">
-            {roles.map((role) => (
-              <Card key={role.name} className={`border-0 shadow-md hover:shadow-lg transition overflow-hidden bg-gradient-to-br ${role.color}`}>
-                <div className="h-24 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {modules.map((mod, idx) => {
+              const Icon = mod.icon
+              return (
+                <div key={idx} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300">
+                  <div className={`h-36 bg-gradient-to-br ${mod.color} relative flex items-center justify-center`}>
+                    <Icon className="w-20 h-20 text-white/20" />
+                    <div className="absolute inset-0 bg-black/10" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">{mod.title}</h3>
+                    <ul className="space-y-2">
+                      {mod.items.map((item, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-white/60">
+                          <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                <CardContent className="pt-4 pb-6">
-                  <p className="text-center font-semibold text-white text-sm">{role.name}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12 p-8 bg-blue-50 rounded-xl border border-blue-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Akses Role-Based</h3>
-            <div className="grid md:grid-cols-2 gap-6 text-gray-700">
-              <div>
-                <p className="font-semibold mb-2">Super Admin</p>
-                <p className="text-sm">Kelola semua event, user, kelas, dan backup data</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-2">Panitia Event</p>
-                <p className="text-sm">Kelola event tertentu, input hasil, verifikasi peserta</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-2">Kandidat OSIS</p>
-                <p className="text-sm">Edit profil kampanye, upload visi misi, monitor suara</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-2">Ketua Kelas</p>
-                <p className="text-sm">Daftar lomba, kelola tim, input data anggota</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-2">Siswa</p>
-                <p className="text-sm">Voting, lihat jadwal, lihat pengumuman, ranking</p>
-              </div>
-            </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
+      {/* Roles */}
+      <section id="roles" className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Sistem Role Fleksibel</h2>
+            <p className="text-white/50 text-lg">Setiap pengguna memiliki akses sesuai perannya</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {roles.map((role) => {
+              const Icon = role.icon
+              return (
+                <div key={role.name} className="glass-card rounded-2xl p-6 text-center hover:border-white/20 transition-all hover:-translate-y-1">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${role.color} flex items-center justify-center mx-auto mb-3 shadow-lg`}>
+                    <Icon className="w-7 h-7 text-white" />
+                  </div>
+                  <p className="font-semibold text-white text-sm">{role.name}</p>
+                  <p className="text-xs text-white/40 mt-1">{role.desc}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">Siap Mengelola Kegiatan Sekolah?</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Mulai gunakan SMKS Digital sekarang juga tanpa perlu setup rumit
-          </p>
-          <Link href="/auth/login">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 gap-2">
-              Masuk ke Dashboard <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <div className="glass-card rounded-3xl p-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-violet-600/10 pointer-events-none" />
+            <h2 className="text-4xl font-bold text-white mb-4 relative">Siap Mengelola Kegiatan Sekolah?</h2>
+            <p className="text-white/50 text-lg mb-8 relative">Mulai gunakan SMKS Digital sekarang juga</p>
+            <Link href="/auth/login">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white border-0 shadow-2xl shadow-blue-500/30 gap-2 px-10 font-semibold text-base relative">
+                Masuk ke Dashboard <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="font-bold text-gray-900 mb-4">SMKS Digital</h3>
-              <p className="text-sm text-gray-600">Platform manajemen kegiatan sekolah modern</p>
+      <footer className="border-t border-white/[0.06] pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Top grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <span className="text-white font-bold text-sm">SM</span>
+                </div>
+                <span className="font-bold text-white text-lg">SMKS Digital</span>
+              </div>
+              <p className="text-sm text-white/40 leading-relaxed mb-5">
+                Platform manajemen kegiatan sekolah yang modern, aman, dan mudah digunakan untuk seluruh civitas akademika.
+              </p>
+              {/* Social */}
+              <div className="flex items-center gap-3">
+                {[
+                  { label: 'IG', href: '#', emoji: '📸' },
+                  { label: 'YT', href: '#', emoji: '▶️' },
+                  { label: 'TW', href: '#', emoji: '🐦' },
+                ].map(s => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    className="w-9 h-9 rounded-xl border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 hover:bg-white/[0.05] transition-all text-xs font-bold"
+                    aria-label={s.label}
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
             </div>
+
+            {/* Navigasi */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Modul</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><a href="#" className="hover:text-blue-600">Classmeeting</a></li>
-                <li><a href="#" className="hover:text-blue-600">Pemilu OSIS</a></li>
-                <li><a href="#" className="hover:text-blue-600">Event Management</a></li>
+              <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Navigasi</p>
+              <ul className="space-y-3">
+                {[
+                  { label: 'Beranda', href: '#' },
+                  { label: 'Fitur', href: '#features' },
+                  { label: 'Modul', href: '#modules' },
+                  { label: 'Role Pengguna', href: '#roles' },
+                  { label: 'Masuk', href: '/auth/login' },
+                ].map(l => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-white/40 hover:text-white transition-colors">
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+
+            {/* Modul */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Fitur</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><a href="#features" className="hover:text-blue-600">Fitur Lengkap</a></li>
-                <li><a href="#roles" className="hover:text-blue-600">Role System</a></li>
+              <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Modul</p>
+              <ul className="space-y-3">
+                {[
+                  { label: '🏆 Classmeeting', href: '#modules' },
+                  { label: '🗳️ Pemilu OSIS', href: '#modules' },
+                  { label: '📅 Event Management', href: '#modules' },
+                  { label: '📢 Pengumuman', href: '#modules' },
+                  { label: '📊 Real Count', href: '#modules' },
+                ].map(l => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-white/40 hover:text-white transition-colors">
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
+
+            {/* Kontak */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Bantuan</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><a href="#" className="hover:text-blue-600">Dokumentasi</a></li>
-                <li><a href="#" className="hover:text-blue-600">Kontak</a></li>
+              <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Kontak</p>
+              <ul className="space-y-3">
+                {[
+                  { icon: '🏫', text: 'SMK Negeri 1 Kota' },
+                  { icon: '📧', text: 'osis@smks.sch.id' },
+                  { icon: '📞', text: '(021) 1234-5678' },
+                  { icon: '🌐', text: 'www.smks.sch.id' },
+                ].map(c => (
+                  <li key={c.text} className="flex items-center gap-2 text-sm text-white/40">
+                    <span>{c.icon}</span>
+                    <span>{c.text}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-600">
-            <p>&copy; 2026 SMKS Digital. All rights reserved.</p>
+          {/* Divider */}
+          <div className="h-px bg-white/[0.06] mb-8" />
+
+          {/* Bottom row */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-white/25">
+              © 2026 <span className="text-white/40 font-medium">SMKS Digital</span>. Hak cipta dilindungi undang-undang.
+            </p>
+            <div className="flex items-center gap-6">
+              {['Kebijakan Privasi', 'Syarat & Ketentuan', 'Bantuan'].map(l => (
+                <a key={l} href="#" className="text-xs text-white/25 hover:text-white/50 transition-colors">
+                  {l}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
-    </>
+    </div>
   )
 }
+

@@ -1,0 +1,250 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  SUPER_ADMIN
+  PANITIA
+  KANDIDAT
+  KETUA_KELAS
+  SISWA
+}
+
+enum EventStatus {
+  ACTIVE
+  UPCOMING
+  ENDED
+}
+
+enum EventType {
+  CLASSMEETING
+  PEMILU
+  MPLS
+  PENTAS_SENI
+  LOMBA_KEMERDEKAAN
+}
+
+enum TeamStatus {
+  REGISTERED
+  APPROVED
+  REJECTED
+}
+
+enum CompetitionCategory {
+  OLAHRAGA
+  AKADEMIK
+  SENI
+}
+
+enum VotingStatus {
+  OPEN
+  CLOSED
+}
+
+enum AnnouncementType {
+  SEKOLAH
+  LOMBA
+  PEMILU
+  JUARA
+}
+
+enum MedalType {
+  GOLD
+  SILVER
+  BRONZE
+  NONE
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id        String   @id @default(cuid())
+  nis       String   @unique
+  name      String
+  password  String
+  role      Role     @default(SISWA)
+  kelas     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdEvents        Event[]           @relation("EventCreator")
+  createdAnnouncements Announcement[]    @relation("AnnouncementCreator")
+  registeredTeams      Team[]            @relation("TeamRegistrar")
+  teamMemberships      TeamMember[]
+  candidate            Candidate?
+  vote                 Vote?
+
+  @@map("users")
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  date        DateTime
+  banner      String?
+  status      EventStatus @default(UPCOMING)
+  type        EventType
+  createdBy   String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  creator        User            @relation("EventCreator", fields: [createdBy], references: [id])
+  competitions   Competition[]
+  candidates     Candidate[]
+  votingSessions VotingSession[]
+
+  @@map("events")
+}
+
+model Competition {
+  id        String              @id @default(cuid())
+  name      String
+  date      DateTime
+  time      String
+  location  String
+  category  CompetitionCategory
+  eventId   String
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  // Relations
+  event   Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teams   Team[]
+  results CompetitionResult[]
+
+  @@map("competitions")
+}
+
+model Team {
+  id             String     @id @default(cuid())
+  name           String
+  kelas          String
+  competitionId  String
+  registeredBy   String
+  status         TeamStatus @default(REGISTERED)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  competition Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  registrar   User              @relation("TeamRegistrar", fields: [registeredBy], references: [id])
+  members     TeamMember[]
+  results     CompetitionResult[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String @id @default(cuid())
+  teamId String
+  userId String?
+  name   String
+
+  // Relations
+  team Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("team_members")
+}
+
+model Candidate {
+  id             String   @id @default(cuid())
+  number         Int
+  userId         String   @unique
+  visiMisi       String
+  campaignVideo  String?
+  photo          String?
+  eventId        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user  User    @relation(fields: [userId], references: [id])
+  event Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  votes Vote[]
+
+  @@map("candidates")
+}
+
+model VotingSession {
+  id           String       @id @default(cuid())
+  eventId      String
+  status       VotingStatus @default(CLOSED)
+  startTime    DateTime
+  endTime      DateTime
+  totalVoters  Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  votes Vote[]
+
+  @@map("voting_sessions")
+}
+
+model Vote {
+  id              String   @id @default(cuid())
+  voterId         String   @unique
+  candidateId     String
+  votingSessionId String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  voter         User          @relation(fields: [voterId], references: [id])
+  candidate     Candidate     @relation(fields: [candidateId], references: [id])
+  votingSession VotingSession @relation(fields: [votingSessionId], references: [id])
+
+  @@map("votes")
+}
+
+model Announcement {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  type        AnnouncementType
+  image       String?
+  createdBy   String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  creator User @relation("AnnouncementCreator", fields: [createdBy], references: [id])
+
+  @@map("announcements")
+}
+
+model CompetitionResult {
+  id            String    @id @default(cuid())
+  competitionId String
+  teamId        String
+  position      Int
+  points        Int       @default(0)
+  medal         MedalType @default(NONE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, position])
+  @@map("competition_results")
+}
