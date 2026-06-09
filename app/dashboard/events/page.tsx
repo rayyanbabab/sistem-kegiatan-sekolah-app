@@ -1,160 +1,203 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Calendar, Plus, Edit2, Trash2, RefreshCw, Shield, CheckCircle, Clock } from 'lucide-react'
+import { Calendar, Plus, Edit3, Trash2, RefreshCw, Globe, Clock, CheckCircle, Star } from 'lucide-react'
+import { Modal, ConfirmDialog, FormField, Input, Select, Textarea, SubmitButton } from '@/components/ui/crud'
 
 interface Event {
-  id: string; name: string; description: string; date: string
-  status: string; type: string; banner: string | null
+  id: string; name: string; description: string | null; date: string
+  banner: string | null; status: string; type: string
+  creator: { id: string; name: string }
   _count: { competitions: number; candidates: number }
 }
 
-const STATUS_CFG: Record<string, { label: string; cls: string }> = {
-  ACTIVE:   { label: 'Aktif',   cls: 'bg-green-500/20 text-green-400 border border-green-500/30' },
-  UPCOMING: { label: 'Segera',  cls: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
-  ENDED:    { label: 'Selesai', cls: 'bg-white/10 text-white/40 border border-white/10' },
+const STATUS_OPTS = [
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'UPCOMING', label: 'Upcoming' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+]
+const TYPE_OPTS = [
+  { value: 'CLASSMEETING', label: 'Classmeeting' },
+  { value: 'PEMILU', label: 'Pemilu OSIS' },
+  { value: 'LOMBA_KEMERDEKAAN', label: 'Lomba Kemerdekaan' },
+  { value: 'PENTAS_SENI', label: 'Pentas Seni' },
+  { value: 'MPLS', label: 'MPLS' },
+  { value: 'LAINNYA', label: 'Lainnya' },
+]
+const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  ACTIVE:    { label: 'Aktif',    color: 'text-green-400',  bg: 'bg-green-500/10',  border: 'border-green-500/20' },
+  UPCOMING:  { label: 'Akan Datang', color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20' },
+  COMPLETED: { label: 'Selesai',  color: 'text-gray-400',   bg: 'bg-gray-500/10',   border: 'border-gray-500/20' },
+  CANCELLED: { label: 'Dibatalkan', color: 'text-red-400',  bg: 'bg-red-500/10',    border: 'border-red-500/20' },
+}
+const TYPE_ICON: Record<string, string> = {
+  CLASSMEETING: '🏆', PEMILU: '🗳️', LOMBA_KEMERDEKAAN: '🇮🇩', PENTAS_SENI: '🎭', MPLS: '📚', LAINNYA: '📅',
 }
 
-const TYPE_LABEL: Record<string, string> = {
-  CLASSMEETING: 'Classmeeting', PEMILU: 'Pemilu OSIS', MPLS: 'MPLS',
-  PENTAS_SENI: 'Pentas Seni', LOMBA_KEMERDEKAAN: 'Lomba Kemerdekaan'
-}
+const EMPTY = { name: '', description: '', date: '', banner: '', status: 'UPCOMING', type: 'CLASSMEETING' }
 
 export default function EventsPage() {
   const { currentUser } = useAuth()
+  const isAdmin = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'PANITIA'
+
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
 
-  const fetchData = async () => {
+  const [showModal, setShowModal] = useState(false)
+  const [editTarget, setEditTarget] = useState<Event | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Event | null>(null)
+  const [form, setForm] = useState(EMPTY)
+
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/events', { credentials: 'include' })
       const json = await res.json()
       if (json.success) setEvents(json.data)
-    } catch { /* ignore */ }
+    } catch { }
     setLoading(false)
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const openCreate = () => { setEditTarget(null); setForm(EMPTY); setError(''); setShowModal(true) }
+  const openEdit   = (e: Event) => {
+    setEditTarget(e)
+    setForm({ name: e.name, description: e.description || '', date: e.date.split('T')[0], banner: e.banner || '', status: e.status, type: e.type })
+    setError(''); setShowModal(true)
   }
 
-  useEffect(() => { fetchData() }, [])
-
-  if (currentUser?.role !== 'SUPER_ADMIN') {
-    return (
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Akses Ditolak</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-faint)' }}>Hanya Super Admin yang dapat mengakses halaman ini</p>
-        </div>
-      </div>
-    )
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault(); if (!form.name || !form.date) { setError('Nama dan tanggal wajib diisi'); return }
+    setSaving(true); setError('')
+    try {
+      const url  = editTarget ? `/api/events/${editTarget.id}` : '/api/events'
+      const method = editTarget ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(form) })
+      const json = await res.json()
+      if (json.success) { setShowModal(false); fetchData() }
+      else setError(json.error || 'Gagal menyimpan')
+    } catch { setError('Gagal terhubung ke server') }
+    setSaving(false)
   }
 
-  const active   = events.filter(e => e.status === 'ACTIVE')
-  const upcoming = events.filter(e => e.status === 'UPCOMING')
-  const ended    = events.filter(e => e.status === 'ENDED')
+  const handleDelete = async () => {
+    if (!deleteTarget) return; setDeleting(true)
+    try {
+      const res = await fetch(`/api/events/${deleteTarget.id}`, { method: 'DELETE', credentials: 'include' })
+      const json = await res.json()
+      if (json.success) { setDeleteTarget(null); fetchData() }
+    } catch { }
+    setDeleting(false)
+  }
+
+  const f = (k: string) => (v: string) => setForm(p => ({ ...p, [k]: v }))
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-4 h-4 text-blue-400" />
-            <span className="text-xs text-blue-400 font-medium uppercase tracking-wider">Super Admin</span>
-          </div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Manajemen Event</h1>
-          <p className="mt-1" style={{ color: 'var(--text-muted)' }}>{events.length} event tersedia</p>
+          <div className="flex items-center gap-2 mb-1"><Calendar className="w-4 h-4 text-blue-400" /><span className="text-xs text-blue-400 font-medium uppercase tracking-wider">Manajemen</span></div>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Events</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{events.length} event terdaftar</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+          <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-blue-500/20">
-            <Plus className="w-4 h-4" /> Event Baru
-          </button>
+          {isAdmin && (
+            <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-violet-600 shadow-lg hover:opacity-90 transition">
+              <Plus className="w-4 h-4" /> Tambah Event
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Total Event', value: events.length, color: 'from-blue-500 to-blue-400', icon: Calendar },
-          { label: 'Event Aktif', value: active.length, color: 'from-green-500 to-emerald-400', icon: CheckCircle },
-          { label: 'Mendatang', value: upcoming.length, color: 'from-amber-500 to-orange-400', icon: Clock },
-        ].map(s => (
-          <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-4">
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center`}>
-              <s.icon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{loading ? '...' : s.value}</p>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Events list */}
+      {/* Grid */}
       {loading ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-36 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1,2,3].map(i => <div key={i} className="glass-card rounded-2xl h-48 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
+        </div>
+      ) : events.length === 0 ? (
+        <div className="glass-card rounded-2xl p-16 text-center">
+          <Calendar className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
+          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada event</p>
+          {isAdmin && <button onClick={openCreate} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-90 transition">Tambah Event Pertama</button>}
         </div>
       ) : (
-        [
-          { label: 'Event Aktif', dot: 'bg-green-400', items: active },
-          { label: 'Event Mendatang', dot: 'bg-blue-400', items: upcoming },
-          { label: 'Event Selesai', dot: 'bg-white/20', items: ended },
-        ].filter(g => g.items.length > 0).map(group => (
-          <div key={group.label} className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-2.5 h-2.5 rounded-full ${group.dot} flex-shrink-0`} />
-              <h2 className="text-base font-semibold" style={{ color: 'var(--text-secondary)' }}>{group.label}</h2>
-              <div className="flex-1 h-px" style={{ background: 'var(--subtle-border)' }} />
-              <span className="text-xs" style={{ color: 'var(--text-faint)' }}>{group.items.length} event</span>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              {group.items.map(event => {
-                const cfg = STATUS_CFG[event.status] || STATUS_CFG.UPCOMING
-                return (
-                  <div key={event.id} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-0.5 group">
-                    <div className="flex">
-                      {event.banner && (
-                        <div className="w-28 h-36 flex-shrink-0 overflow-hidden">
-                          <img src={event.banner} alt={event.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        </div>
-                      )}
-                      <div className="flex-1 p-4">
-                        <div className="flex items-start justify-between mb-2 gap-2">
-                          <div>
-                            <p className="text-[10px] font-medium mb-0.5" style={{ color: 'var(--text-faint)' }}>{TYPE_LABEL[event.type] || event.type}</p>
-                            <h3 className="font-bold text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>{event.name}</h3>
-                          </div>
-                          <span className={`flex-shrink-0 px-2 py-0.5 rounded-lg text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>
-                        </div>
-                        <p className="text-xs line-clamp-2 mb-3 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{event.description}</p>
-                        <div className="flex items-center gap-1 text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-                          <Calendar className="w-3 h-3" />
-                          {new Date(event.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </div>
-                        <div className="flex gap-1.5 pt-2" style={{ borderTop: '1px solid var(--subtle-border)' }}>
-                          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition" style={{ background: 'var(--subtle-bg)', color: 'var(--text-muted)' }}>
-                            <Edit2 className="w-3 h-3" /> Edit
-                          </button>
-                          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition bg-red-500/10 text-red-400/70 hover:text-red-400 hover:bg-red-500/20">
-                            <Trash2 className="w-3 h-3" /> Hapus
-                          </button>
-                        </div>
-                      </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {events.map(ev => {
+            const s = STATUS_CFG[ev.status] || STATUS_CFG.UPCOMING
+            return (
+              <div key={ev.id} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-0.5 group">
+                {/* Banner */}
+                <div className="h-28 bg-gradient-to-br from-blue-600/30 to-violet-600/30 relative overflow-hidden">
+                  {ev.banner && <img src={ev.banner} alt="" className="w-full h-full object-cover opacity-60" />}
+                  <div className="absolute inset-0 flex items-center justify-center text-5xl">{TYPE_ICON[ev.type] || '📅'}</div>
+                  {isAdmin && (
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <button onClick={() => openEdit(ev)} className="w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition"><Edit3 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => setDeleteTarget(ev)} className="w-8 h-8 rounded-lg bg-red-500/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>{ev.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold flex-shrink-0 ${s.bg} ${s.color} border ${s.border}`}>{s.label}</span>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        ))
+                  {ev.description && <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{ev.description}</p>}
+                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-faint)' }}>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(ev.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{ev._count.competitions} lomba · {ev._count.candidates} kandidat</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       )}
+
+      {/* Create/Edit Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editTarget ? 'Edit Event' : 'Tambah Event Baru'} size="md">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FormField label="Nama Event" required>
+            <Input value={form.name} onChange={e => f('name')(e.target.value)} placeholder="cth. Classmeeting 2026" required />
+          </FormField>
+          <FormField label="Deskripsi">
+            <Textarea rows={3} value={form.description} onChange={e => f('description')(e.target.value)} placeholder="Deskripsi event..." />
+          </FormField>
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Tanggal" required>
+              <Input type="date" value={form.date} onChange={e => f('date')(e.target.value)} required />
+            </FormField>
+            <FormField label="Tipe">
+              <Select value={form.type} onChange={e => f('type')(e.target.value)} options={TYPE_OPTS} />
+            </FormField>
+          </div>
+          <FormField label="Status">
+            <Select value={form.status} onChange={e => f('status')(e.target.value)} options={STATUS_OPTS} />
+          </FormField>
+          <FormField label="URL Banner" hint="Link gambar banner (opsional)">
+            <Input value={form.banner} onChange={e => f('banner')(e.target.value)} placeholder="https://..." />
+          </FormField>
+          {error && <p className="text-xs text-red-400 px-1">{error}</p>}
+          <SubmitButton loading={saving} label={editTarget ? 'Simpan Perubahan' : 'Tambah Event'} />
+        </form>
+      </Modal>
+
+      {/* Confirm Delete */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
+        title="Hapus Event" loading={deleting}
+        message={`Apakah kamu yakin ingin menghapus event "${deleteTarget?.name}"? Semua data terkait akan ikut terhapus.`}
+      />
     </div>
   )
 }

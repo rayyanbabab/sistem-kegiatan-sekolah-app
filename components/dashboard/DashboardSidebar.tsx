@@ -67,13 +67,15 @@ export default function DashboardSidebar() {
       { label: 'Classmeeting', icon: Trophy, submenu: [
         { label: 'Daftar Lomba', href: '/dashboard/classmeeting/competitions' },
         { label: 'Tim',          href: '/dashboard/classmeeting/teams' },
+        { label: 'Input Hasil',  href: '/dashboard/classmeeting/results' },
         { label: 'Jadwal',       href: '/dashboard/classmeeting/schedule' },
         { label: 'Leaderboard',  href: '/dashboard/classmeeting/leaderboard' },
       ]},
       { label: 'Pemilu OSIS', icon: Vote, submenu: [
-        { label: 'Kandidat',   href: '/dashboard/pemilu/candidates' },
-        { label: 'Voting',     href: '/dashboard/pemilu/voting' },
-        { label: 'Real Count', href: '/dashboard/pemilu/real-count' },
+        { label: '⚙️ Kelola Pemilu', href: '/dashboard/pemilu/admin' },
+        { label: 'Kandidat',         href: '/dashboard/pemilu/candidates' },
+        { label: 'Voting',           href: '/dashboard/pemilu/voting' },
+        { label: 'Real Count',       href: '/dashboard/pemilu/real-count' },
       ]},
       ...announce,
     ]
@@ -84,6 +86,11 @@ export default function DashboardSidebar() {
         { label: 'Daftar Lomba',   href: '/dashboard/classmeeting/competitions' },
         { label: 'Verifikasi Tim', href: '/dashboard/classmeeting/teams' },
         { label: 'Input Hasil',    href: '/dashboard/classmeeting/results' },
+      ]},
+      { label: 'Pemilu OSIS', icon: Vote, submenu: [
+        { label: '⚙️ Kelola Pemilu', href: '/dashboard/pemilu/admin' },
+        { label: 'Kandidat',         href: '/dashboard/pemilu/candidates' },
+        { label: 'Real Count',       href: '/dashboard/pemilu/real-count' },
       ]},
       ...announce,
     ]
@@ -103,6 +110,7 @@ export default function DashboardSidebar() {
         { label: 'Daftar Lomba', href: '/dashboard/classmeeting/competitions' },
         { label: 'Tim Kelas',    href: '/dashboard/classmeeting/my-teams' },
         { label: 'Jadwal',       href: '/dashboard/classmeeting/schedule' },
+        { label: 'Hasil',        href: '/dashboard/classmeeting/results' },
       ]},
       ...announce,
     ]

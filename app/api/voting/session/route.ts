@@ -87,3 +87,34 @@ export async function PUT(req: NextRequest) {
 
   return ok(updated)
 }
+
+// PATCH /api/voting/session — Open atau close sesi terbaru
+export async function PATCH(req: NextRequest) {
+  const { error } = await requireAuth(['SUPER_ADMIN', 'PANITIA'])
+  if (error) return error
+
+  const body = await req.json()
+  const { action } = body  // 'open' | 'close'
+
+  if (!['open', 'close'].includes(action)) {
+    return err("action harus 'open' atau 'close'")
+  }
+
+  // Cari sesi terbaru
+  const latestSession = await prisma.votingSession.findFirst({
+    orderBy: { createdAt: 'desc' },
+  })
+
+  if (!latestSession) return err('Tidak ada sesi voting. Buat sesi terlebih dahulu.', 404)
+
+  const newStatus = action === 'open' ? 'OPEN' : 'CLOSED'
+
+  const updated = await prisma.votingSession.update({
+    where: { id: latestSession.id },
+    data: { status: newStatus as any },
+    include: { event: { select: { id: true, name: true } } },
+  })
+
+  return ok(updated)
+}
+

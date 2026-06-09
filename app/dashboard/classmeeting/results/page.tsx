@@ -2,172 +2,177 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Trophy, Star, Medal, RefreshCw } from 'lucide-react'
+import { Trophy, Star, Medal, RefreshCw, Plus, Trash2 } from 'lucide-react'
+import { Modal, ConfirmDialog, FormField, Select, SubmitButton } from '@/components/ui/crud'
 
 interface Result {
   id: string; position: number; points: number; medal: string | null
   team: { id: string; name: string; kelas: string }
   competition: { id: string; name: string; category: string }
 }
+interface Team   { id: string; name: string; kelas: string; competition: { id: string; name: string } }
+interface Competition { id: string; name: string; category: string }
 
-const MEDAL_CFG: Record<string, { label: string; icon: string; color: string; bar: string; height: string }> = {
-  GOLD:   { label: 'Juara 1', icon: '🥇', color: 'bg-amber-400/15 border-amber-400/30 text-amber-400', bar: 'from-amber-500 to-yellow-400', height: 'h-20' },
-  SILVER: { label: 'Juara 2', icon: '🥈', color: 'bg-slate-400/15 border-slate-400/30 text-slate-400',  bar: 'from-slate-400 to-slate-300',   height: 'h-12' },
-  BRONZE: { label: 'Juara 3', icon: '🥉', color: 'bg-orange-400/15 border-orange-400/30 text-orange-400', bar: 'from-orange-500 to-amber-500', height: 'h-8' },
-}
-
+const MEDAL_OPTS = [
+  { value: 'GOLD', label: '🥇 Juara 1 (Gold)' }, { value: 'SILVER', label: '🥈 Juara 2 (Silver)' },
+  { value: 'BRONZE', label: '🥉 Juara 3 (Bronze)' }, { value: 'NONE', label: 'Tanpa Medali' },
+]
 const CAT_ICON: Record<string, string> = { OLAHRAGA: '⚽', AKADEMIK: '🎤', SENI: '🎨' }
 const CAT_GRAD: Record<string, string> = { OLAHRAGA: 'from-blue-500 to-cyan-500', AKADEMIK: 'from-violet-500 to-purple-500', SENI: 'from-amber-500 to-yellow-500' }
+const MEDAL_ICON: Record<string, string> = { GOLD: '🥇', SILVER: '🥈', BRONZE: '🥉', NONE: '' }
+
+const EMPTY = { competitionId: '', teamId: '', position: '1', points: '100', medal: 'GOLD' }
 
 export default function ResultsPage() {
   const { currentUser } = useAuth()
   const isAdmin = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'PANITIA'
-  const [results, setResults] = useState<Result[]>([])
-  const [loading, setLoading] = useState(true)
+
+  const [results, setResults]         = useState<Result[]>([])
+  const [teams, setTeams]             = useState<Team[]>([])
+  const [comps, setComps]             = useState<Competition[]>([])
+  const [loading, setLoading]         = useState(true)
+  const [saving, setSaving]           = useState(false)
+  const [deleting, setDeleting]       = useState(false)
+  const [showModal, setShowModal]     = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Result | null>(null)
+  const [form, setForm]               = useState(EMPTY)
+  const [error, setError]             = useState('')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/results', { credentials: 'include' })
-      const json = await res.json()
-      if (json.success) setResults(json.data)
-    } catch { /* ignore */ }
+      const [rr, tr, cr] = await Promise.all([
+        fetch('/api/results', { credentials: 'include' }),
+        fetch('/api/teams?status=APPROVED', { credentials: 'include' }),
+        fetch('/api/competitions', { credentials: 'include' }),
+      ])
+      const rj = await rr.json(); if (rj.success) setResults(rj.data)
+      const tj = await tr.json(); if (tj.success) setTeams(tj.data)
+      const cj = await cr.json(); if (cj.success) setComps(cj.data)
+    } catch { }
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Group results by competition
+  const openCreate = () => { setForm({ ...EMPTY, competitionId: comps[0]?.id || '' }); setError(''); setShowModal(true) }
+
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault()
+    if (!form.competitionId || !form.teamId) { setError('Kompetisi dan tim wajib dipilih'); return }
+    setSaving(true); setError('')
+    try {
+      const res = await fetch('/api/results', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ competitionId: form.competitionId, teamId: form.teamId, position: parseInt(form.position), points: parseInt(form.points), medal: form.medal }),
+      })
+      const json = await res.json()
+      if (json.success) { setShowModal(false); fetchData() }
+      else setError(json.error || 'Gagal menyimpan hasil')
+    } catch { setError('Gagal terhubung ke server') }
+    setSaving(false)
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return; setDeleting(true)
+    try {
+      await fetch(`/api/results/${deleteTarget.id}`, { method: 'DELETE', credentials: 'include' })
+      setDeleteTarget(null); fetchData()
+    } catch { }
+    setDeleting(false)
+  }
+
+  const f = (k: string) => (v: string) => setForm(p => ({ ...p, [k]: v }))
+
+  // Group by competition
   const byComp: Record<string, Result[]> = {}
-  results.forEach(r => {
-    if (!byComp[r.competition.id]) byComp[r.competition.id] = []
-    byComp[r.competition.id].push(r)
-  })
-  // Sort each competition's results by position
+  results.forEach(r => { if (!byComp[r.competition.id]) byComp[r.competition.id] = []; byComp[r.competition.id].push(r) })
   Object.values(byComp).forEach(arr => arr.sort((a, b) => a.position - b.position))
+
+  // Teams filtered by selected competition
+  const filteredTeams = form.competitionId ? teams.filter(t => t.competition?.id === form.competitionId) : teams
+  const compOpts = comps.map(c => ({ value: c.id, label: c.name }))
+  const teamOpts = filteredTeams.map(t => ({ value: t.id, label: `${t.name} (${t.kelas})` }))
+
+  const POS_OPT = [
+    { value: '1', label: '🥇 Juara 1' }, { value: '2', label: '🥈 Juara 2' },
+    { value: '3', label: '🥉 Juara 3' }, { value: '4', label: 'Posisi 4' }, { value: '5', label: 'Posisi 5' },
+  ]
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Classmeeting 2026</span>
-          </div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            {isAdmin ? 'Input Hasil Pertandingan' : 'Hasil Pertandingan'}
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            {isAdmin ? 'Kelola dan tampilkan hasil setiap pertandingan' : 'Hasil klasemen pertandingan classmeeting'}
-          </p>
+          <div className="flex items-center gap-2 mb-1"><Trophy className="w-4 h-4 text-amber-400" /><span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Classmeeting</span></div>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Hasil Pertandingan</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{results.length} hasil tercatat</p>
         </div>
-        <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex gap-2">
+          <button onClick={fetchData} className="px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          {isAdmin && (
+            <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg hover:opacity-90 transition">
+              <Plus className="w-4 h-4" /> Input Hasil
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-48 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
-        </div>
+        <div className="grid md:grid-cols-2 gap-4">{[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-48 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}</div>
       ) : results.length === 0 ? (
         <div className="glass-card rounded-2xl p-16 text-center">
           <Trophy className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
           <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada hasil pertandingan</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-faint)' }}>Hasil akan muncul setelah panitia menginputkan data</p>
+          {isAdmin && <button onClick={openCreate} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 transition">Input Hasil Pertama</button>}
         </div>
       ) : (
         <>
-          {/* Summary stats */}
+          {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
             {[
               { label: 'Kompetisi Selesai', value: Object.keys(byComp).length, color: 'from-amber-500 to-orange-400', icon: Trophy },
               { label: 'Medali Emas', value: results.filter(r => r.medal === 'GOLD').length, color: 'from-yellow-500 to-amber-400', icon: Star },
-              { label: 'Total Tim Juara', value: results.length, color: 'from-blue-500 to-cyan-400', icon: Medal },
+              { label: 'Total Hasil', value: results.length, color: 'from-blue-500 to-cyan-400', icon: Medal },
             ].map(s => (
               <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0`}>
-                  <s.icon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-                </div>
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0`}><s.icon className="w-5 h-5 text-white" /></div>
+                <div><p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p><p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</p></div>
               </div>
             ))}
           </div>
 
-          {/* Podium by competition */}
+          {/* By competition */}
           <div className="grid md:grid-cols-2 gap-5">
             {Object.values(byComp).map(compResults => {
               const comp = compResults[0].competition
               const grad = CAT_GRAD[comp.category] || 'from-blue-500 to-violet-500'
               const icon = CAT_ICON[comp.category] || '🏆'
-              const gold   = compResults.find(r => r.medal === 'GOLD' || r.position === 1)
-              const silver = compResults.find(r => r.medal === 'SILVER' || r.position === 2)
-              const bronze = compResults.find(r => r.medal === 'BRONZE' || r.position === 3)
-
               return (
-                <div key={comp.id} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all">
+                <div key={comp.id} className="glass-card rounded-2xl overflow-hidden">
                   <div className={`h-1.5 bg-gradient-to-r ${grad}`} />
                   <div className="p-5">
-                    {/* Competition header */}
-                    <div className="flex items-center gap-3 mb-5">
+                    <div className="flex items-center gap-3 mb-4">
                       <span className="text-2xl">{icon}</span>
-                      <div>
-                        <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</h3>
-                        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{comp.category.toLowerCase()}</p>
-                      </div>
+                      <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</h3>
                     </div>
-
-                    {/* Podium */}
-                    <div className="flex items-end gap-3 justify-center">
-                      {/* 2nd place */}
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-slate-400/15 border border-slate-400/30 flex items-center justify-center text-lg">🥈</div>
-                        <div className="h-12 w-20 rounded-t-xl bg-slate-400/10 border border-slate-400/20 flex items-end justify-center pb-1.5">
-                          <span className="text-xs font-bold text-slate-400">2nd</span>
-                        </div>
-                        <p className="text-[11px] text-center font-medium leading-tight w-20" style={{ color: 'var(--text-muted)' }}>
-                          {silver ? silver.team.kelas : '—'}
-                        </p>
-                      </div>
-                      {/* 1st place */}
-                      <div className="flex flex-col items-center gap-2">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center text-xl shadow-lg`}>⭐</div>
-                        <div className="h-20 w-20 rounded-t-xl bg-amber-400/10 border border-amber-400/20 flex items-end justify-center pb-1.5">
-                          <span className="text-xs font-bold text-amber-400">1st</span>
-                        </div>
-                        <p className="text-[11px] text-center font-semibold leading-tight w-20" style={{ color: 'var(--text-primary)' }}>
-                          {gold ? gold.team.kelas : '—'}
-                        </p>
-                      </div>
-                      {/* 3rd place */}
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-orange-400/15 border border-orange-400/30 flex items-center justify-center text-lg">🥉</div>
-                        <div className="h-8 w-20 rounded-t-xl bg-orange-400/10 border border-orange-400/20 flex items-end justify-center pb-1.5">
-                          <span className="text-xs font-bold text-orange-400">3rd</span>
-                        </div>
-                        <p className="text-[11px] text-center font-medium leading-tight w-20" style={{ color: 'var(--text-muted)' }}>
-                          {bronze ? bronze.team.kelas : '—'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Full list */}
-                    <div className="mt-4 pt-4 space-y-1.5" style={{ borderTop: '1px solid var(--subtle-border)' }}>
-                      {compResults.map(r => {
-                        const mcfg = r.medal ? MEDAL_CFG[r.medal] : null
-                        return (
-                          <div key={r.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm" style={{ background: 'var(--subtle-bg)' }}>
-                            <span className="text-base w-6 text-center">{mcfg?.icon || `#${r.position}`}</span>
-                            <span className="flex-1 font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{r.team.name}</span>
-                            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>{r.team.kelas}</span>
-                            <span className="text-xs font-semibold text-amber-400">{r.points} pts</span>
+                    <div className="space-y-2">
+                      {compResults.map(r => (
+                        <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl group hover:bg-white/[0.03] transition" style={{ background: 'var(--subtle-bg)' }}>
+                          <span className="text-lg w-7 text-center flex-shrink-0">{r.medal && MEDAL_ICON[r.medal] || `#${r.position}`}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{r.team.name}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{r.team.kelas} · {r.points} pts</p>
                           </div>
-                        )
-                      })}
+                          {isAdmin && (
+                            <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -176,6 +181,42 @@ export default function ResultsPage() {
           </div>
         </>
       )}
+
+      {/* Input Hasil Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Input Hasil Pertandingan">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FormField label="Kompetisi" required>
+            <Select value={form.competitionId} onChange={e => { f('competitionId')(e.target.value); f('teamId')('') }} options={compOpts} placeholder="Pilih kompetisi..." />
+          </FormField>
+          <FormField label="Tim" required>
+            <Select value={form.teamId} onChange={e => f('teamId')(e.target.value)} options={teamOpts} placeholder={form.competitionId ? 'Pilih tim...' : 'Pilih kompetisi dulu'} />
+          </FormField>
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Posisi">
+              <Select value={form.position} onChange={e => {
+                const pos = e.target.value
+                f('position')(pos)
+                const medals: Record<string, string> = { '1': 'GOLD', '2': 'SILVER', '3': 'BRONZE' }
+                f('medal')(medals[pos] || 'NONE')
+                f('points')(pos === '1' ? '100' : pos === '2' ? '75' : pos === '3' ? '50' : '25')
+              }} options={POS_OPT} />
+            </FormField>
+            <FormField label="Medali">
+              <Select value={form.medal} onChange={e => f('medal')(e.target.value)} options={MEDAL_OPTS} />
+            </FormField>
+          </div>
+          <FormField label="Poin" hint="Poin untuk leaderboard kelas">
+            <input type="number" min="0" value={form.points} onChange={e => f('points')(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition focus:ring-2 focus:ring-blue-500/40"
+              style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-primary)' }} />
+          </FormField>
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          <SubmitButton loading={saving} label="Simpan Hasil" />
+        </form>
+      </Modal>
+
+      <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
+        title="Hapus Hasil" message={`Hapus hasil ${deleteTarget?.team?.name} dari ${deleteTarget?.competition?.name}?`} />
     </div>
   )
 }
