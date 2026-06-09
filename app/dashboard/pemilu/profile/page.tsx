@@ -1,7 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Vote, Camera, Edit3, FileText, Star, TrendingUp, Users, CheckCircle } from 'lucide-react'
+import { Vote, Star, FileText, TrendingUp, Users, CheckCircle, RefreshCw } from 'lucide-react'
+
+interface CandidateProfile {
+  id: string; number: number; visiMisi: string
+  campaignVideo: string | null; photo: string | null; votes: number
+  user: { name: string; kelas: string | null; avatar: string | null }
+}
+interface VotingSessionInfo {
+  totalVoters: number; votedCount: number; participationRate: number
+  status: string; startTime: string; endTime: string
+}
 
 const PROGRAMS = [
   { emoji: '📚', title: 'Program Akademik', desc: 'Peningkatan fasilitas belajar dan mentoring antar siswa' },
@@ -10,27 +21,69 @@ const PROGRAMS = [
   { emoji: '💻', title: 'Program Digital', desc: 'Modernisasi sistem informasi dan komunikasi OSIS' },
 ]
 
-const TIMELINE = [
-  { date: '10 Juni 2026', event: 'Pendaftaran Kandidat Dibuka', status: 'done' },
-  { date: '15 Juni 2026', event: 'Batas Akhir Upload Profil', status: 'done' },
-  { date: '20 Juni 2026', event: 'Voting Dibuka', status: 'upcoming' },
-  { date: '22 Juni 2026', event: 'Voting Ditutup', status: 'upcoming' },
-  { date: '23 Juni 2026', event: 'Pengumuman Pemenang', status: 'upcoming' },
-]
-
 export default function CandidateProfilePage() {
   const { currentUser } = useAuth()
+  const [profile, setProfile] = useState<CandidateProfile | null>(null)
+  const [sessionInfo, setSessionInfo] = useState<VotingSessionInfo | null>(null)
+  const [allCandidates, setAllCandidates] = useState<CandidateProfile[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [candRes, resultsRes] = await Promise.all([
+        fetch('/api/candidates', { credentials: 'include' }),
+        fetch('/api/voting/results', { credentials: 'include' }),
+      ])
+      if (candRes.ok) {
+        const j = await candRes.json()
+        if (j.success) {
+          setAllCandidates(j.data)
+          // Find current user's candidate profile
+          const mine = j.data.find((c: CandidateProfile) => c.user.name === currentUser?.name)
+          if (mine) setProfile(mine)
+        }
+      }
+      if (resultsRes.ok) {
+        const j = await resultsRes.json()
+        if (j.success && j.data.votingSession) setSessionInfo(j.data.votingSession)
+      }
+    } catch { /* ignore */ }
+    setLoading(false)
+  }
+
+  useEffect(() => { fetchData() }, [currentUser?.name])
+
+  const totalVoters = sessionInfo?.totalVoters || 450
+  const myVotes     = profile?.votes || 0
+  const myPct       = totalVoters > 0 ? Math.round((myVotes / totalVoters) * 100) : 0
+  const myRank      = profile
+    ? [...allCandidates].sort((a, b) => b.votes - a.votes).findIndex(c => c.id === profile.id) + 1
+    : 0
+
+  const timelineItems = [
+    { event: 'Pendaftaran Kandidat Dibuka', done: true, date: '10 Juni 2026' },
+    { event: 'Batas Akhir Upload Profil', done: true, date: '15 Juni 2026' },
+    { event: 'Voting Dibuka', done: sessionInfo?.status === 'OPEN' || sessionInfo?.status === 'CLOSED', date: sessionInfo ? new Date(sessionInfo.startTime).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '20 Juni 2026' },
+    { event: 'Voting Ditutup', done: sessionInfo?.status === 'CLOSED', date: sessionInfo ? new Date(sessionInfo.endTime).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '22 Juni 2026' },
+    { event: 'Pengumuman Pemenang', done: false, date: '23 Juni 2026' },
+  ]
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-5">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Vote className="w-4 h-4 text-violet-400" />
-          <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Vote className="w-4 h-4 text-violet-400" />
+            <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
+          </div>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Profil Kampanye Saya</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Kelola profil kampanye dan program kerja Anda</p>
         </div>
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Profil Kampanye Saya</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Kelola profil kampanye dan program kerja Anda</p>
+        <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {/* Profile Card */}
@@ -41,36 +94,34 @@ export default function CandidateProfilePage() {
             {/* Photo */}
             <div className="relative flex-shrink-0">
               <div className="w-28 h-28 rounded-2xl overflow-hidden" style={{ border: '2px solid var(--glass-border)' }}>
-                <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'candidate'}`}
-                  alt="Foto Kandidat"
-                  className="w-full h-full object-cover"
-                />
+                {loading ? (
+                  <div className="w-full h-full animate-pulse" style={{ background: 'var(--subtle-bg)' }} />
+                ) : (
+                  <img
+                    src={profile?.photo || profile?.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'candidate'}`}
+                    alt="Foto Kandidat"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
-              <button className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-violet-500 flex items-center justify-center shadow-lg hover:bg-violet-400 transition">
-                <Camera className="w-4 h-4 text-white" />
-              </button>
+              {profile && (
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold">#{profile.number}</span>
+                </div>
+              )}
             </div>
 
             {/* Info */}
             <div className="flex-1">
-              <div className="flex items-start justify-between gap-3 mb-1">
-                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {currentUser?.name || 'Nama Kandidat'}
-                </h2>
-                <span className="px-3 py-1 rounded-xl text-xs font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20 flex-shrink-0">
-                  Kandidat #3
-                </span>
-              </div>
+              <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{currentUser?.name}</h2>
               <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-                {currentUser?.kelas || 'XII IPA 2'} · SMKS Digital
+                {currentUser?.kelas} · Kandidat OSIS 2026
               </p>
-
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Suara', value: '73', color: 'text-violet-400' },
-                  { label: 'Persentase', value: '20%', color: 'text-pink-400' },
-                  { label: 'Ranking', value: '#3', color: 'text-amber-400' },
+                  { label: 'Suara', value: loading ? '...' : myVotes, color: 'text-violet-400' },
+                  { label: 'Persentase', value: loading ? '...' : `${myPct}%`, color: 'text-pink-400' },
+                  { label: 'Ranking', value: loading ? '...' : myRank > 0 ? `#${myRank}` : '—', color: 'text-amber-400' },
                 ].map(s => (
                   <div key={s.label} className="p-3 rounded-xl text-center" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
                     <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
@@ -85,32 +136,29 @@ export default function CandidateProfilePage() {
 
       {/* Visi Misi */}
       <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-400" />
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Visi & Misi</h2>
-          </div>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition" style={{ background: 'var(--subtle-bg)', color: 'var(--text-muted)', border: '1px solid var(--subtle-border)' }}>
-            <Edit3 className="w-3 h-3" /> Edit
-          </button>
+        <div className="flex items-center gap-2 mb-3">
+          <Star className="w-4 h-4 text-amber-400" />
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Visi & Misi</h2>
         </div>
         <div className="p-4 rounded-xl" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Mewujudkan OSIS yang inklusif, transparan, dan berdampak nyata bagi seluruh siswa SMKS Digital dengan program-program inovatif yang mendorong kreativitas dan kolaborasi antar kelas.
-          </p>
+          {loading ? (
+            <div className="space-y-2">
+              <div className="h-3 rounded w-full animate-pulse" style={{ background: 'var(--subtle-border)' }} />
+              <div className="h-3 rounded w-4/5 animate-pulse" style={{ background: 'var(--subtle-border)' }} />
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {profile?.visiMisi || 'Visi misi belum diisi.'}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Program Kerja */}
       <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Program Kerja</h2>
-          </div>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition" style={{ background: 'var(--subtle-bg)', color: 'var(--text-muted)', border: '1px solid var(--subtle-border)' }}>
-            <Edit3 className="w-3 h-3" /> Edit
-          </button>
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-4 h-4 text-blue-400" />
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Program Kerja</h2>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {PROGRAMS.map(p => (
@@ -132,20 +180,13 @@ export default function CandidateProfilePage() {
           <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Timeline Pemilu</h2>
         </div>
         <div className="space-y-3">
-          {TIMELINE.map((t, i) => (
+          {timelineItems.map((t, i) => (
             <div key={i} className="flex items-center gap-4">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                t.status === 'done' ? 'bg-green-500/15 border border-green-500/30' : 'bg-white/5 border border-white/10'
-              }`}>
-                {t.status === 'done'
-                  ? <CheckCircle className="w-4 h-4 text-green-400" />
-                  : <div className="w-2 h-2 rounded-full bg-white/20" />
-                }
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${t.done ? 'bg-green-500/15 border border-green-500/30' : 'bg-white/5 border border-white/10'}`}>
+                {t.done ? <CheckCircle className="w-4 h-4 text-green-400" /> : <div className="w-2 h-2 rounded-full bg-white/20" />}
               </div>
               <div className="flex-1 flex items-center justify-between gap-3">
-                <p className="text-sm" style={{ color: t.status === 'done' ? 'var(--text-secondary)' : 'var(--text-faint)' }}>
-                  {t.event}
-                </p>
+                <p className="text-sm" style={{ color: t.done ? 'var(--text-secondary)' : 'var(--text-faint)' }}>{t.event}</p>
                 <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-faint)' }}>{t.date}</span>
               </div>
             </div>
@@ -153,29 +194,24 @@ export default function CandidateProfilePage() {
         </div>
       </div>
 
-      {/* Kelola Dukungan */}
+      {/* Stats pendukung */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-3">
           <Users className="w-4 h-4 text-pink-400" />
-          <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Pendukung</h2>
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Perolehan Suara</h2>
         </div>
         <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-          <div className="flex -space-x-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 border-2 flex items-center justify-center text-xs text-white font-bold" style={{ borderColor: 'var(--sidebar-surface)' }}>
-                {String.fromCharCode(65 + i)}
-              </div>
-            ))}
-          </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>73 siswa mendukung</p>
-            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>dari 450 total pemilih</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {loading ? '...' : myVotes} suara diperoleh
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>dari {totalVoters} total pemilih</p>
           </div>
-          <div className="ml-auto">
-            <div className="w-16 h-2 rounded-full" style={{ background: 'var(--subtle-border)' }}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 to-pink-500" style={{ width: '20%' }} />
+          <div className="ml-auto flex-1">
+            <div className="w-full h-2 rounded-full" style={{ background: 'var(--subtle-border)' }}>
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all duration-1000" style={{ width: `${myPct}%` }} />
             </div>
-            <p className="text-[10px] text-right mt-1 text-violet-400">20%</p>
+            <p className="text-[10px] text-right mt-1 text-violet-400">{myPct}%</p>
           </div>
         </div>
       </div>
