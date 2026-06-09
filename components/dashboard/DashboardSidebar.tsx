@@ -12,11 +12,11 @@ import {
 } from 'lucide-react'
 
 const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
-  'super-admin': { label: 'Super Admin', color: 'from-blue-500 to-blue-400', icon: Shield },
-  'panitia':     { label: 'Panitia Event', color: 'from-violet-500 to-violet-400', icon: CheckCircle },
-  'kandidat':    { label: 'Kandidat OSIS', color: 'from-pink-500 to-pink-400', icon: Trophy },
-  'ketua-kelas': { label: 'Ketua Kelas', color: 'from-cyan-500 to-cyan-400', icon: Star },
-  'siswa':       { label: 'Siswa', color: 'from-green-500 to-green-400', icon: Users },
+  'SUPER_ADMIN': { label: 'Super Admin',   color: 'from-blue-500 to-blue-400',   icon: Shield },
+  'PANITIA':     { label: 'Panitia Event', color: 'from-violet-500 to-violet-400', icon: CheckCircle },
+  'KANDIDAT':    { label: 'Kandidat OSIS', color: 'from-pink-500 to-pink-400',   icon: Trophy },
+  'KETUA_KELAS': { label: 'Ketua Kelas',   color: 'from-cyan-500 to-cyan-400',   icon: Star },
+  'SISWA':       { label: 'Siswa',         color: 'from-green-500 to-green-400', icon: Users },
 }
 
 // Reusable nav link styles via CSS variables
@@ -47,7 +47,7 @@ export default function DashboardSidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({})
 
-  const handleLogout = () => { logout(); router.push('/') }
+  const handleLogout = async () => { await logout(); router.push('/') }
   const toggleMenu = (menu: string) =>
     setExpandedMenus(prev => ({ ...prev, [menu]: !prev[menu] }))
   const isActive = (href: string) => pathname === href
@@ -58,7 +58,7 @@ export default function DashboardSidebar() {
     const base     = [{ label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }]
     const announce = [{ label: 'Pengumuman', href: '/dashboard/pengumuman', icon: Megaphone }]
 
-    if (currentUser?.role === 'super-admin') return [
+    if (currentUser?.role === 'SUPER_ADMIN') return [
       ...base,
       { label: 'Event', icon: Calendar, submenu: [
         { label: 'Kelola Event', href: '/dashboard/events' },
@@ -78,17 +78,17 @@ export default function DashboardSidebar() {
       ...announce,
     ]
 
-    if (currentUser?.role === 'panitia') return [
+    if (currentUser?.role === 'PANITIA') return [
       ...base,
       { label: 'Classmeeting', icon: Trophy, submenu: [
-        { label: 'Daftar Lomba',  href: '/dashboard/classmeeting/competitions' },
+        { label: 'Daftar Lomba',   href: '/dashboard/classmeeting/competitions' },
         { label: 'Verifikasi Tim', href: '/dashboard/classmeeting/teams' },
         { label: 'Input Hasil',    href: '/dashboard/classmeeting/results' },
       ]},
       ...announce,
     ]
 
-    if (currentUser?.role === 'kandidat') return [
+    if (currentUser?.role === 'KANDIDAT') return [
       ...base,
       { label: 'Pemilu OSIS', icon: Vote, submenu: [
         { label: 'Profil Kampanye', href: '/dashboard/pemilu/profile' },
@@ -97,7 +97,7 @@ export default function DashboardSidebar() {
       ...announce,
     ]
 
-    if (currentUser?.role === 'ketua-kelas') return [
+    if (currentUser?.role === 'KETUA_KELAS') return [
       ...base,
       { label: 'Classmeeting', icon: Trophy, submenu: [
         { label: 'Daftar Lomba', href: '/dashboard/classmeeting/competitions' },
@@ -107,6 +107,7 @@ export default function DashboardSidebar() {
       ...announce,
     ]
 
+    // SISWA (default)
     return [
       ...base,
       { label: 'Classmeeting', icon: Trophy, submenu: [
@@ -123,8 +124,8 @@ export default function DashboardSidebar() {
   }
 
   const menuItems = getMenuItems()
-  const role = currentUser?.role || 'siswa'
-  const roleCfg = roleConfig[role] || roleConfig['siswa']
+  const role = currentUser?.role || 'SISWA'
+  const roleCfg = roleConfig[role] || roleConfig['SISWA']
   const RoleIcon = roleCfg.icon
 
   const SidebarContent = () => (

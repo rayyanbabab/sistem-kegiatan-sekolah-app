@@ -1,68 +1,95 @@
 'use client'
 
-import React, { createContext, useContext, useState, useCallback } from 'react'
-import { User, Role, userVotingHistory } from '@/lib/mockData'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
-interface AuthContextType {
-  currentUser: User | null
-  isAuthenticated: boolean
-  login: (nis: string, role: Role) => void
-  logout: () => void
-  switchRole: (role: Role) => void
-  hasVoted: boolean
-  setHasVoted: (voted: boolean) => void
+// ─── Types ────────────────────────────────────────────────────────────────────
+export type DBRole = 'SUPER_ADMIN' | 'PANITIA' | 'KANDIDAT' | 'KETUA_KELAS' | 'SISWA'
+
+export interface CurrentUser {
+  id: string
+  nis: string
+  name: string
+  role: DBRole
+  kelas: string | null
+  avatar: string | null
 }
 
+interface AuthContextType {
+  currentUser: CurrentUser | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  login: (nis: string, password: string) => Promise<{ success: boolean; error?: string }>
+  logout: () => Promise<void>
+  // legacy compat (masih dipakai di beberapa tempat, tapi noop)
+  hasVoted: boolean
+  setHasVoted: (v: boolean) => void
+}
+
+// ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true) // true saat pertama kali load
   const [hasVoted, setHasVoted] = useState(false)
 
-  const login = useCallback((nis: string, role: Role) => {
-    // Mock login - in real app this would verify credentials
-    const user: User = {
-      id: '1',
-      name: role === 'super-admin' ? 'Admin Sekolah' : 
-            role === 'panitia' ? 'Panitia OSIS' :
-            role === 'kandidat' ? 'Siti Nurhaliza' :
-            role === 'ketua-kelas' ? 'Ketua Kelas XI IPA 2' :
-            'Ahmad Ridho',
-      nis: nis,
-      role: role,
-      kelas: role === 'super-admin' ? '-' : 'XI IPA 2',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${role}`
+  // ── Restore session dari cookie saat pertama mount ──────────────────────────
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' })
+        if (res.ok) {
+          const json = await res.json()
+          if (json.success) setCurrentUser(json.data)
+        }
+      } catch {
+        // no session
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setCurrentUser(user)
-    setHasVoted(!!userVotingHistory[nis])
+    restoreSession()
   }, [])
 
-  const logout = useCallback(() => {
+  // ── Login ─────────────────────────────────────────────────────────────────
+  const login = useCallback(async (nis: string, password: string) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ nis, password }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setCurrentUser(json.data.user)
+        return { success: true }
+      }
+      return { success: false, error: json.error || 'NIS atau password salah' }
+    } catch {
+      return { success: false, error: 'Gagal terhubung ke server' }
+    }
+  }, [])
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    } catch { /* ignore */ }
     setCurrentUser(null)
     setHasVoted(false)
   }, [])
 
-  const switchRole = useCallback((role: Role) => {
-    if (currentUser) {
-      setCurrentUser({
-        ...currentUser,
-        role
-      })
-    }
-  }, [currentUser])
-
   return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        isAuthenticated: !!currentUser,
-        login,
-        logout,
-        switchRole,
-        hasVoted,
-        setHasVoted
-      }}
-    >
+    <AuthContext.Provider value={{
+      currentUser,
+      isAuthenticated: !!currentUser,
+      isLoading,
+      login,
+      logout,
+      hasVoted,
+      setHasVoted,
+    }}>
       {children}
     </AuthContext.Provider>
   )
@@ -70,8 +97,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (context === undefined) throw new Error('useAuth must be used within AuthProvider')
   return context
 }

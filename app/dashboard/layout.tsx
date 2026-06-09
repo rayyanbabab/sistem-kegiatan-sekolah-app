@@ -2,21 +2,18 @@
 
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/')
-    } else {
-      setIsLoading(false)
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth/login')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
     return (
@@ -35,6 +32,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     )
   }
+
+  if (!isAuthenticated) return null
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">

@@ -10,10 +10,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     where: { id },
     include: {
       event: { select: { id: true, name: true } },
+      _count: { select: { teams: true } },
       teams: {
-        include: {
-          members: true,
-        },
+        include: { members: true },
         orderBy: { createdAt: 'desc' },
       },
       results: {

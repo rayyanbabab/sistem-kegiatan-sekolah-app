@@ -83,3 +83,31 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   await prisma.team.delete({ where: { id } })
   return ok({ message: 'Tim berhasil dihapus' })
 }
+
+// PATCH /api/teams/[id] — Shorthand untuk update status (approve/reject)
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { error, session } = await requireAuth(['SUPER_ADMIN', 'PANITIA'])
+  if (error) return error
+
+  const { id } = await params
+  const { data, error: bodyErr } = await parseBody<{ status: string }>(req)
+  if (bodyErr) return bodyErr
+
+  const allowed = ['APPROVED', 'REJECTED', 'REGISTERED']
+  if (!data!.status || !allowed.includes(data!.status)) {
+    return err('Status tidak valid. Gunakan: APPROVED, REJECTED, atau REGISTERED')
+  }
+
+  const team = await prisma.team.update({
+    where: { id },
+    data: { status: data!.status as any },
+    include: {
+      competition: { select: { id: true, name: true } },
+      members: true,
+      registrar: { select: { id: true, name: true } },
+    },
+  })
+
+  return ok(team)
+}
+
