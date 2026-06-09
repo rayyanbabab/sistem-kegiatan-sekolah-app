@@ -1,7 +1,7 @@
 import { defineConfig } from 'prisma/config'
 import { PrismaNeon } from '@prisma/adapter-neon'
 
-const DATABASE_URL = "postgresql://neondb_owner:npg_ez8FGpiU7qwm@ep-bitter-haze-ao63rnn3-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+const DATABASE_URL = process.env.DATABASE_URL!
 
 export default defineConfig({
   earlyAccess: true,
