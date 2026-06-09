@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Vote, Users, BarChart3, Star, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Vote, Users, BarChart3, Star, ExternalLink, BookOpen, Theater, Heart, Monitor } from 'lucide-react'
 
 interface CandidateDetail {
   id: string; number: number; visiMisi: string
@@ -17,10 +17,10 @@ const GRADIENTS = [
   'from-pink-500 to-rose-500', 'from-amber-500 to-orange-500',
 ]
 const PROGRAMS = [
-  { emoji: '📚', title: 'Program Akademik', desc: 'Peningkatan fasilitas belajar dan program mentoring antar siswa' },
-  { emoji: '🎭', title: 'Program Seni & Budaya', desc: 'Revitalisasi kegiatan seni untuk mengembangkan bakat siswa' },
-  { emoji: '🤝', title: 'Program Sosial', desc: 'Kegiatan sosial dan gotong royong untuk masyarakat sekitar' },
-  { emoji: '💻', title: 'Program Digital', desc: 'Modernisasi sistem informasi dan komunikasi OSIS' },
+  { icon: BookOpen, title: 'Program Akademik', desc: 'Peningkatan fasilitas belajar dan program mentoring antar siswa', color: 'from-blue-500 to-cyan-500' },
+  { icon: Theater,  title: 'Program Seni & Budaya', desc: 'Revitalisasi kegiatan seni untuk mengembangkan bakat siswa', color: 'from-violet-500 to-purple-500' },
+  { icon: Heart,    title: 'Program Sosial', desc: 'Kegiatan sosial dan gotong royong untuk masyarakat sekitar', color: 'from-pink-500 to-rose-500' },
+  { icon: Monitor,  title: 'Program Digital', desc: 'Modernisasi sistem informasi dan komunikasi OSIS', color: 'from-green-500 to-emerald-500' },
 ]
 
 export default function CandidateDetailPage() {
@@ -154,7 +154,9 @@ export default function CandidateDetailPage() {
         <div className="grid sm:grid-cols-2 gap-3">
           {PROGRAMS.map(p => (
             <div key={p.title} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-              <span className="text-2xl flex-shrink-0">{p.emoji}</span>
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${p.color} flex items-center justify-center flex-shrink-0`}>
+                <p.icon className="w-4 h-4 text-white" />
+              </div>
               <div>
                 <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{p.title}</p>
                 <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{p.desc}</p>

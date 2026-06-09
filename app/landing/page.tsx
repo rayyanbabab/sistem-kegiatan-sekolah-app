@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ui/ThemeToggle'
-import { ArrowRight, Trophy, BarChart3, Calendar, Users, Lock, Zap, Shield, Star, CheckCircle } from 'lucide-react'
+import { ArrowRight, Trophy, BarChart3, Calendar, Users, Lock, Zap, Shield, Star, CheckCircle, Building2, Mail, Phone, Globe } from 'lucide-react'
 
 export default function LandingPage() {
   const features = [
@@ -271,11 +271,11 @@ export default function LandingPage() {
               <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Modul</p>
               <ul className="space-y-3">
                 {[
-                  { label: '🏆 Classmeeting', href: '#modules' },
-                  { label: '🗳️ Pemilu OSIS', href: '#modules' },
-                  { label: '📅 Event Management', href: '#modules' },
-                  { label: '📢 Pengumuman', href: '#modules' },
-                  { label: '📊 Real Count', href: '#modules' },
+                  { label: 'Classmeeting', href: '#modules' },
+                  { label: 'Pemilu OSIS', href: '#modules' },
+                  { label: 'Event Management', href: '#modules' },
+                  { label: 'Pengumuman', href: '#modules' },
+                  { label: 'Real Count', href: '#modules' },
                 ].map(l => (
                   <li key={l.label}>
                     <a href={l.href} className="text-sm text-white/40 hover:text-white transition-colors">
@@ -291,13 +291,13 @@ export default function LandingPage() {
               <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Kontak</p>
               <ul className="space-y-3">
                 {[
-                  { icon: '🏫', text: 'SMK Negeri 1 Kota' },
-                  { icon: '📧', text: 'osis@smks.sch.id' },
-                  { icon: '📞', text: '(021) 1234-5678' },
-                  { icon: '🌐', text: 'www.smks.sch.id' },
+                  { icon: Building2, text: 'SMK Negeri 1 Kota' },
+                  { icon: Mail,      text: 'osis@smks.sch.id' },
+                  { icon: Phone,     text: '(021) 1234-5678' },
+                  { icon: Globe,     text: 'www.smks.sch.id' },
                 ].map(c => (
                   <li key={c.text} className="flex items-center gap-2 text-sm text-white/40">
-                    <span>{c.icon}</span>
+                    <c.icon className="w-3.5 h-3.5 flex-shrink-0" />
                     <span>{c.text}</span>
                   </li>
                 ))}

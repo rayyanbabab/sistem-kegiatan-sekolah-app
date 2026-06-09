@@ -41,12 +41,6 @@ enum TeamStatus {
   REJECTED
 }
 
-enum CompetitionCategory {
-  OLAHRAGA
-  AKADEMIK
-  SENI
-}
-
 enum VotingStatus {
   OPEN
   CLOSED
@@ -77,7 +71,7 @@ model User {
   password  String
   role      Role     @default(SISWA)
   kelas     String?
-  avatar    String?
+  avatar    String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -97,7 +91,7 @@ model Event {
   name        String
   description String
   date        DateTime
-  banner      String?
+  banner      String?     @db.Text
   status      EventStatus @default(UPCOMING)
   type        EventType
   createdBy   String
@@ -114,15 +108,15 @@ model Event {
 }
 
 model Competition {
-  id        String              @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   date      DateTime
   time      String
   location  String
-  category  CompetitionCategory
+  category  String
   eventId   String
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   event   Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -170,7 +164,7 @@ model Candidate {
   userId         String   @unique
   visiMisi       String
   campaignVideo  String?
-  photo          String?
+  photo          String?  @db.Text
   eventId        String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -220,7 +214,7 @@ model Announcement {
   title       String
   description String
   type        AnnouncementType
-  image       String?
+  image       String?          @db.Text
   createdBy   String
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -247,4 +241,37 @@ model CompetitionResult {
 
   @@unique([competitionId, position])
   @@map("competition_results")
+}
+
+// ── Fitur Baru ────────────────────────────────────────────────
+
+model Kelas {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  tingkat   String   // X, XI, XII
+  jurusan   String   // IPA, IPS, RPL, dll
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("kelas")
+}
+
+model CompetitionCategoryLabel {
+  id        String   @id @default(cuid())
+  name      String   @unique  // nama kategori, cth. "Olahraga"
+  icon      String   @default("🏅") // emoji icon
+  color     String   @default("blue") // warna theme: blue, violet, amber, green, pink, cyan
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("competition_category_labels")
+}
+
+model SchoolSettings {
+  id         String   @id @default(cuid())
+  schoolName String   @default("SMKS Digital")
+  logo       String?  @db.Text
+  updatedAt  DateTime @updatedAt
+
+  @@map("school_settings")
 }

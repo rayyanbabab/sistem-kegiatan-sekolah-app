@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import {
   Trophy, ArrowLeft, Plus, Trash2, Users,
   CheckCircle, Calendar, Clock, MapPin, AlertCircle,
+  Dumbbell, Mic2, Palette, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -20,7 +21,7 @@ const CAT_COLOR: Record<string, string> = {
   AKADEMIK:  'from-violet-500 to-purple-500',
   SENI:      'from-amber-500 to-yellow-500',
 }
-const CAT_ICON: Record<string, string> = { OLAHRAGA: '⚽', AKADEMIK: '🎤', SENI: '🎨' }
+const CAT_ICON: Record<string, LucideIcon> = { OLAHRAGA: Dumbbell, AKADEMIK: Mic2, SENI: Palette }
 
 const KELAS_LIST = [
   'X IPA 1','X IPA 2','X IPA 3','X IPS 1','X IPS 2',
@@ -104,7 +105,9 @@ export default function RegisterTeamPage() {
   // ── 404 guard ────────────────────────────────────────────────────────────
   if (notFound || !comp) return (
     <div className="p-6 max-w-xl mx-auto text-center space-y-4 mt-16">
-      <p className="text-5xl">🏆</p>
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center mx-auto">
+        <Trophy className="w-8 h-8 text-white" />
+      </div>
       <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Kompetisi tidak ditemukan</h1>
       <Link href="/dashboard/classmeeting/competitions">
         <button className="mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:opacity-90 transition">
@@ -115,13 +118,15 @@ export default function RegisterTeamPage() {
   )
 
   const color = CAT_COLOR[comp.category] || 'from-blue-500 to-violet-500'
-  const icon  = CAT_ICON[comp.category] || '🏆'
+  const CatIcon = CAT_ICON[comp.category] || Trophy
 
   // ── Success screen ───────────────────────────────────────────────────────
   if (submitted) return (
     <div className="p-6 max-w-xl mx-auto mt-10 animate-fade-in-up">
       <div className="glass-card rounded-3xl p-8 text-center space-y-4">
-        <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-4xl shadow-xl`}>{icon}</div>
+        <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-xl`}>
+          <CatIcon className="w-10 h-10 text-white" />
+        </div>
         <div className="w-14 h-14 mx-auto rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center -mt-8 relative z-10">
           <CheckCircle className="w-7 h-7 text-green-400" />
         </div>
@@ -163,7 +168,9 @@ export default function RegisterTeamPage() {
         <div className={`h-2 bg-gradient-to-r ${color}`} />
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-3xl shadow-lg flex-shrink-0`}>{icon}</div>
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg flex-shrink-0`}>
+              <CatIcon className="w-8 h-8 text-white" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1"><Trophy className="w-3.5 h-3.5 text-amber-400" /><span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Daftar Tim</span></div>
               <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{comp.name}</h1>

@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Shield, Users, Plus, Edit3, Trash2, Search, UserCheck, RefreshCw, Key } from 'lucide-react'
-import { Modal, ConfirmDialog, FormField, Input, Select, SubmitButton } from '@/components/ui/crud'
+import { Shield, Users, Plus, Edit3, Trash2, Search, UserCheck, RefreshCw } from 'lucide-react'
+import { Modal, ConfirmDialog, FormField, Input, Select, SubmitButton, ImageUpload } from '@/components/ui/crud'
 
 interface User { id: string; name: string; nis: string; role: string; kelas: string | null; avatar: string | null }
+interface Kelas { id: string; name: string; tingkat: string; jurusan: string }
 
 const ROLE_CFG: Record<string, { label: string; color: string; bg: string; border: string; gradient: string }> = {
   SUPER_ADMIN:  { label: 'Super Admin', color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20',   gradient: 'from-blue-500 to-blue-400' },
@@ -16,24 +17,23 @@ const ROLE_CFG: Record<string, { label: string; color: string; bg: string; borde
 }
 const ROLE_OPTS = Object.entries(ROLE_CFG).map(([v, c]) => ({ value: v, label: c.label }))
 const FILTER_ROLES = ['Semua', ...Object.values(ROLE_CFG).map(r => r.label)]
-const KELAS_LIST = ['X IPA 1','X IPA 2','X IPA 3','X IPS 1','X IPS 2','XI IPA 1','XI IPA 2','XI IPA 3','XI IPS 1','XI IPS 2','XII IPA 1','XII IPA 2','XII IPA 3','XII IPS 1','XII IPS 2']
-const KELAS_OPTS = KELAS_LIST.map(k => ({ value: k, label: k }))
 
-const EMPTY_CREATE = { name: '', nis: '', password: '', role: 'SISWA', kelas: '' }
-const EMPTY_EDIT   = { name: '', role: 'SISWA', kelas: '' }
+const EMPTY_CREATE = { name: '', nis: '', password: '', role: 'SISWA', kelas: '', avatar: null as string | null }
+const EMPTY_EDIT   = { name: '', role: 'SISWA', kelas: '', avatar: null as string | null }
 
 export default function UsersPage() {
   const { currentUser } = useAuth()
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [users, setUsers]   = useState<User[]>([])
+  const [kelasList, setKelasList] = useState<Kelas[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [saving, setSaving]     = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState('Semua')
-  const [error, setError] = useState('')
-  const [showCreate, setShowCreate]   = useState(false)
-  const [showEdit, setShowEdit]       = useState(false)
-  const [editTarget, setEditTarget]   = useState<User | null>(null)
+  const [search, setSearch]   = useState('')
+  const [filter, setFilter]   = useState('Semua')
+  const [error, setError]     = useState('')
+  const [showCreate, setShowCreate]     = useState(false)
+  const [showEdit, setShowEdit]         = useState(false)
+  const [editTarget, setEditTarget]     = useState<User | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
   const [createForm, setCreateForm] = useState(EMPTY_CREATE)
   const [editForm, setEditForm]     = useState(EMPTY_EDIT)
@@ -41,10 +41,13 @@ export default function UsersPage() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/users', { credentials: 'include' })
-      const json = await res.json()
-      if (json.success) setUsers(json.data)
-    } catch { }
+      const [ur, kr] = await Promise.all([
+        fetch('/api/users',  { credentials: 'include' }),
+        fetch('/api/kelas',  { credentials: 'include' }),
+      ])
+      const uj = await ur.json(); if (uj.success) setUsers(uj.data)
+      const kj = await kr.json(); if (kj.success) setKelasList(kj.data)
+    } catch {}
     setLoading(false)
   }, [])
 
@@ -61,6 +64,8 @@ export default function UsersPage() {
     )
   }
 
+  const kelasOpts = kelasList.map(k => ({ value: k.name, label: k.name }))
+
   const filtered = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.nis.includes(search)
     const matchFilter = filter === 'Semua' || ROLE_CFG[u.role]?.label === filter
@@ -68,16 +73,16 @@ export default function UsersPage() {
   })
 
   const stats = [
-    { label: 'Total User', value: users.length, color: 'from-blue-500 to-cyan-400', icon: Users },
-    { label: 'Panitia', value: users.filter(u => u.role === 'PANITIA').length, color: 'from-violet-500 to-purple-400', icon: UserCheck },
-    { label: 'Kandidat', value: users.filter(u => u.role === 'KANDIDAT').length, color: 'from-pink-500 to-rose-400', icon: Shield },
-    { label: 'Siswa', value: users.filter(u => u.role === 'SISWA').length, color: 'from-green-500 to-emerald-400', icon: Users },
+    { label: 'Total User', value: users.length,                                  color: 'from-blue-500 to-cyan-400',    icon: Users },
+    { label: 'Panitia',    value: users.filter(u => u.role === 'PANITIA').length, color: 'from-violet-500 to-purple-400', icon: UserCheck },
+    { label: 'Kandidat',   value: users.filter(u => u.role === 'KANDIDAT').length,color: 'from-pink-500 to-rose-400',     icon: Shield },
+    { label: 'Siswa',      value: users.filter(u => u.role === 'SISWA').length,   color: 'from-green-500 to-emerald-400', icon: Users },
   ]
 
   const openCreate = () => { setCreateForm(EMPTY_CREATE); setError(''); setShowCreate(true) }
   const openEdit = (u: User) => {
     setEditTarget(u)
-    setEditForm({ name: u.name, role: u.role, kelas: u.kelas || '' })
+    setEditForm({ name: u.name, role: u.role, kelas: u.kelas || '', avatar: u.avatar || null })
     setError(''); setShowEdit(true)
   }
 
@@ -86,7 +91,7 @@ export default function UsersPage() {
     if (!createForm.nis || !createForm.name || !createForm.password) { setError('NIS, nama, dan password wajib diisi'); return }
     setSaving(true); setError('')
     try {
-      const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(createForm) })
+      const res  = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(createForm) })
       const json = await res.json()
       if (json.success) { setShowCreate(false); fetchData() }
       else setError(json.error || 'Gagal membuat user')
@@ -99,7 +104,7 @@ export default function UsersPage() {
     if (!editTarget || !editForm.name) { setError('Nama wajib diisi'); return }
     setSaving(true); setError('')
     try {
-      const res = await fetch(`/api/users/${editTarget.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(editForm) })
+      const res  = await fetch(`/api/users/${editTarget.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(editForm) })
       const json = await res.json()
       if (json.success) { setShowEdit(false); fetchData() }
       else setError(json.error || 'Gagal menyimpan')
@@ -112,7 +117,7 @@ export default function UsersPage() {
     try {
       await fetch(`/api/users/${deleteTarget.id}`, { method: 'DELETE', credentials: 'include' })
       setDeleteTarget(null); fetchData()
-    } catch { }
+    } catch {}
     setDeleting(false)
   }
 
@@ -179,7 +184,7 @@ export default function UsersPage() {
         {loading ? (
           <div>{[1,2,3,4,5].map(i => (
             <div key={i} className="px-5 py-4 flex items-center gap-4 animate-pulse" style={{ borderBottom: '1px solid var(--subtle-border)' }}>
-              <div className="w-10 h-10 rounded-xl flex-shrink-0" style={{ background: 'var(--subtle-bg)' }} />
+              <div className="w-10 h-10 rounded-full flex-shrink-0" style={{ background: 'var(--subtle-bg)' }} />
               <div className="flex-1 space-y-2"><div className="h-3 rounded w-32" style={{ background: 'var(--subtle-bg)' }} /><div className="h-2.5 rounded w-48" style={{ background: 'var(--subtle-bg)' }} /></div>
             </div>
           ))}</div>
@@ -189,8 +194,10 @@ export default function UsersPage() {
               const r = ROLE_CFG[u.role] || ROLE_CFG['SISWA']
               return (
                 <div key={u.id} className="px-5 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition group" style={{ borderBottom: '1px solid var(--subtle-border)' }}>
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${r.gradient} flex items-center justify-center flex-shrink-0 overflow-hidden shadow`}>
-                    {u.avatar ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" /> : <span className="text-white font-bold text-sm">{u.name.charAt(0)}</span>}
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${r.gradient} flex items-center justify-center flex-shrink-0 overflow-hidden shadow`}>
+                    {u.avatar
+                      ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                      : <span className="text-white font-bold text-sm">{u.name.charAt(0)}</span>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{u.name}</p>
@@ -210,8 +217,18 @@ export default function UsersPage() {
       </div>
 
       {/* Create Modal */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Tambah User Baru">
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Tambah User Baru" size="lg">
         <form onSubmit={handleCreate} className="space-y-4">
+          <FormField label="Foto Profil">
+            <ImageUpload
+              value={createForm.avatar}
+              onChange={v => setCreateForm(p => ({ ...p, avatar: v }))}
+              shape="circle"
+              size={72}
+              placeholder="Upload foto profil user"
+              maxSizeKB={400}
+            />
+          </FormField>
           <FormField label="Nama Lengkap" required><Input value={createForm.name} onChange={e => fc('name')(e.target.value)} placeholder="Nama lengkap..." required /></FormField>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="NIS" required><Input value={createForm.nis} onChange={e => fc('nis')(e.target.value)} placeholder="cth. 12345678" required /></FormField>
@@ -219,22 +236,36 @@ export default function UsersPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Role"><Select value={createForm.role} onChange={e => fc('role')(e.target.value)} options={ROLE_OPTS} /></FormField>
-            <FormField label="Kelas"><Select value={createForm.kelas} onChange={e => fc('kelas')(e.target.value)} options={KELAS_OPTS} placeholder="Pilih kelas..." /></FormField>
+            <FormField label="Kelas">
+              <Select value={createForm.kelas} onChange={e => fc('kelas')(e.target.value)} options={kelasOpts} placeholder="Pilih kelas..." />
+            </FormField>
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
           <SubmitButton loading={saving} label="Buat User" />
         </form>
       </Modal>
 
       {/* Edit Modal */}
-      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title={`Edit: ${editTarget?.name}`}>
+      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title={`Edit: ${editTarget?.name}`} size="lg">
         <form onSubmit={handleEdit} className="space-y-4">
+          <FormField label="Foto Profil">
+            <ImageUpload
+              value={editForm.avatar}
+              onChange={v => setEditForm(p => ({ ...p, avatar: v }))}
+              shape="circle"
+              size={72}
+              placeholder="Upload foto profil"
+              maxSizeKB={400}
+            />
+          </FormField>
           <FormField label="Nama Lengkap" required><Input value={editForm.name} onChange={e => fe('name')(e.target.value)} placeholder="Nama lengkap..." required /></FormField>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Role"><Select value={editForm.role} onChange={e => fe('role')(e.target.value)} options={ROLE_OPTS} /></FormField>
-            <FormField label="Kelas"><Select value={editForm.kelas} onChange={e => fe('kelas')(e.target.value)} options={KELAS_OPTS} placeholder="Tanpa kelas" /></FormField>
+            <FormField label="Kelas">
+              <Select value={editForm.kelas} onChange={e => fe('kelas')(e.target.value)} options={kelasOpts} placeholder="Tanpa kelas" />
+            </FormField>
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
           <SubmitButton loading={saving} label="Simpan Perubahan" />
         </form>
       </Modal>

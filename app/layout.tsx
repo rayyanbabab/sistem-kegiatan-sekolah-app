@@ -11,7 +11,6 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'Sistem Manajemen Kegiatan Sekolah',
   description: 'Platform manajemen kegiatan sekolah - Classmeeting, Pemilu OSIS, Event Management, dan Pengumuman',
-  generator: 'v0.app',
   icons: {
     icon: [
       {

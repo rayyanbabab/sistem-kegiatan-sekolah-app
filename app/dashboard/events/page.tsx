@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Calendar, Plus, Edit3, Trash2, RefreshCw, Globe, Clock, CheckCircle, Star } from 'lucide-react'
+import { Calendar, Plus, Edit3, Trash2, RefreshCw, Globe, Trophy, Vote, Flag, Music, BookOpen, LucideIcon } from 'lucide-react'
 import { Modal, ConfirmDialog, FormField, Input, Select, Textarea, SubmitButton } from '@/components/ui/crud'
 
 interface Event {
@@ -32,8 +32,8 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; bor
   COMPLETED: { label: 'Selesai',  color: 'text-gray-400',   bg: 'bg-gray-500/10',   border: 'border-gray-500/20' },
   CANCELLED: { label: 'Dibatalkan', color: 'text-red-400',  bg: 'bg-red-500/10',    border: 'border-red-500/20' },
 }
-const TYPE_ICON: Record<string, string> = {
-  CLASSMEETING: '🏆', PEMILU: '🗳️', LOMBA_KEMERDEKAAN: '🇮🇩', PENTAS_SENI: '🎭', MPLS: '📚', LAINNYA: '📅',
+const TYPE_ICON: Record<string, LucideIcon> = {
+  CLASSMEETING: Trophy, PEMILU: Vote, LOMBA_KEMERDEKAAN: Flag, PENTAS_SENI: Music, MPLS: BookOpen, LAINNYA: Calendar,
 }
 
 const EMPTY = { name: '', description: '', date: '', banner: '', status: 'UPCOMING', type: 'CLASSMEETING' }
@@ -139,7 +139,10 @@ export default function EventsPage() {
                 {/* Banner */}
                 <div className="h-28 bg-gradient-to-br from-blue-600/30 to-violet-600/30 relative overflow-hidden">
                   {ev.banner && <img src={ev.banner} alt="" className="w-full h-full object-cover opacity-60" />}
-                  <div className="absolute inset-0 flex items-center justify-center text-5xl">{TYPE_ICON[ev.type] || '📅'}</div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {(() => { const Icon = TYPE_ICON[ev.type] || Calendar; return <Icon className="w-12 h-12 text-white/50" /> })()
+                    }
+                  </div>
                   {isAdmin && (
                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
                       <button onClick={() => openEdit(ev)} className="w-8 h-8 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition"><Edit3 className="w-3.5 h-3.5" /></button>

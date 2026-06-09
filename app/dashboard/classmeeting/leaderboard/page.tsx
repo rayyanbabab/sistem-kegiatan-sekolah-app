@@ -26,15 +26,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
+const RankBadge = ({ rank }: { rank: number }) => {
+  if (rank === 1) return <span className="w-6 h-6 rounded-full bg-amber-500/30 text-amber-400 font-black text-xs flex items-center justify-center">1</span>
+  if (rank === 2) return <span className="w-6 h-6 rounded-full bg-slate-400/30 text-slate-300 font-black text-xs flex items-center justify-center">2</span>
+  if (rank === 3) return <span className="w-6 h-6 rounded-full bg-orange-500/30 text-orange-400 font-black text-xs flex items-center justify-center">3</span>
+  return <span className="text-sm font-semibold text-white/40">#{rank}</span>
+}
+
 export default function LeaderboardPage() {
   const podiumOrder = [LEADERBOARD[1], LEADERBOARD[0], LEADERBOARD[2]].filter(Boolean)
   const podiumHeight = ['h-24', 'h-32', 'h-20']
-  const podiumEmoji = ['🥈', '🥇', '🥉']
   const podiumColors = [
     'from-slate-400 to-slate-500',
     'from-amber-400 to-yellow-500',
     'from-orange-400 to-amber-600',
   ]
+  const podiumRankColors = ['text-slate-300', 'text-amber-300', 'text-orange-300']
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -50,12 +57,17 @@ export default function LeaderboardPage() {
 
       {/* Podium */}
       <div className="glass-card rounded-2xl p-6">
-        <p className="text-sm font-semibold text-white/50 mb-6 text-center uppercase tracking-wider">🏆 Podium Juara</p>
+        <div className="flex items-center gap-2 mb-6 justify-center">
+          <Trophy className="w-4 h-4 text-amber-400/60" />
+          <p className="text-sm font-semibold text-white/50 uppercase tracking-wider">Podium Juara</p>
+        </div>
         <div className="flex items-end justify-center gap-3">
           {podiumOrder.map((item, i) => (
             <div key={item.kelas} className="flex flex-col items-center gap-2 flex-1 max-w-[140px]">
               <div className="text-center">
-                <p className="text-2xl mb-1">{podiumEmoji[i]}</p>
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${podiumColors[i]} flex items-center justify-center mx-auto mb-2 shadow-lg`}>
+                  <span className={`text-lg font-black ${podiumRankColors[i]}`}>{podiumOrder[i].rank}</span>
+                </div>
                 <p className="text-sm font-bold text-white">{item.kelas}</p>
                 <p className="text-xs text-white/40">{item.points} poin</p>
               </div>
@@ -121,9 +133,9 @@ export default function LeaderboardPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-white">{item.kelas}</p>
                   <div className="flex gap-1.5 mt-1">
-                    <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-lg">🥇 {item.medals.gold}</span>
-                    <span className="text-xs px-2 py-0.5 bg-slate-400/10 text-slate-400 rounded-lg">🥈 {item.medals.silver}</span>
-                    <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 rounded-lg">🥉 {item.medals.bronze}</span>
+                    <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-lg font-medium">Emas {item.medals.gold}</span>
+                    <span className="text-xs px-2 py-0.5 bg-slate-400/10 text-slate-400 rounded-lg font-medium">Perak {item.medals.silver}</span>
+                    <span className="text-xs px-2 py-0.5 bg-orange-500/10 text-orange-400 rounded-lg font-medium">Perunggu {item.medals.bronze}</span>
                   </div>
                 </div>
                 <p className="text-lg font-bold text-white">{item.points}</p>
@@ -142,7 +154,7 @@ export default function LeaderboardPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                {['Rank', 'Kelas', '🥇', '🥈', '🥉', 'Total Poin'].map((h, i) => (
+                {['Rank', 'Kelas', 'Emas', 'Perak', 'Perunggu', 'Total Poin'].map((h, i) => (
                   <th key={i} className={`px-4 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider ${i === 0 || i >= 2 ? 'text-center' : 'text-left'} ${i === 5 ? 'text-right' : ''}`}>{h}</th>
                 ))}
               </tr>
@@ -151,9 +163,7 @@ export default function LeaderboardPage() {
               {LEADERBOARD.map((item) => (
                 <tr key={item.rank} className={`border-b border-white/[0.04] hover:bg-white/[0.03] transition ${item.rank <= 3 ? 'bg-white/[0.02]' : ''}`}>
                   <td className="px-4 py-4 text-center">
-                    <span className={`text-lg ${item.rank === 1 ? '' : ''}`}>
-                      {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : <span className="text-sm font-semibold text-white/40">#{item.rank}</span>}
-                    </span>
+                    <RankBadge rank={item.rank} />
                   </td>
                   <td className="px-4 py-4">
                     <p className="font-semibold text-white text-sm">{item.kelas}</p>
@@ -173,15 +183,19 @@ export default function LeaderboardPage() {
 
       {/* Scoring system */}
       <div className="glass-card rounded-2xl p-5 border-blue-500/20 bg-blue-500/5">
-        <p className="text-sm font-semibold text-blue-400 mb-3">📊 Sistem Penilaian</p>
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart3 className="w-4 h-4 text-blue-400" />
+          <p className="text-sm font-semibold text-blue-400">Sistem Penilaian</p>
+        </div>
         <div className="grid grid-cols-3 gap-3 text-center">
           {[
-            { emoji: '🥇', label: 'Emas', pts: '100 poin', color: 'text-amber-400' },
-            { emoji: '🥈', label: 'Perak', pts: '50 poin', color: 'text-slate-400' },
-            { emoji: '🥉', label: 'Perunggu', pts: '25 poin', color: 'text-orange-400' },
+            { label: 'Emas', pts: '100 poin', color: 'text-amber-400', bg: 'bg-amber-500/10', dot: 'bg-amber-400' },
+            { label: 'Perak', pts: '50 poin', color: 'text-slate-400', bg: 'bg-slate-400/10', dot: 'bg-slate-400' },
+            { label: 'Perunggu', pts: '25 poin', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-400' },
           ].map(s => (
-            <div key={s.label} className="p-3 rounded-xl bg-white/[0.03]">
-              <p className="text-2xl mb-1">{s.emoji}</p>
+            <div key={s.label} className={`p-3 rounded-xl ${s.bg}`}>
+              <div className={`w-4 h-4 rounded-full ${s.dot} mx-auto mb-2`} />
+              <p className={`text-xs font-semibold ${s.color} mb-0.5`}>{s.label}</p>
               <p className={`text-sm font-bold ${s.color}`}>{s.pts}</p>
             </div>
           ))}

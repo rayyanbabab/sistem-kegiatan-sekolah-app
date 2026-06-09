@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Trophy, Star, Medal, RefreshCw, Plus, Trash2 } from 'lucide-react'
+import { Trophy, Star, Medal, RefreshCw, Plus, Trash2, Dumbbell, Mic2, Palette, LucideIcon } from 'lucide-react'
 import { Modal, ConfirmDialog, FormField, Select, SubmitButton } from '@/components/ui/crud'
 
 interface Result {
@@ -14,12 +14,17 @@ interface Team   { id: string; name: string; kelas: string; competition: { id: s
 interface Competition { id: string; name: string; category: string }
 
 const MEDAL_OPTS = [
-  { value: 'GOLD', label: '🥇 Juara 1 (Gold)' }, { value: 'SILVER', label: '🥈 Juara 2 (Silver)' },
-  { value: 'BRONZE', label: '🥉 Juara 3 (Bronze)' }, { value: 'NONE', label: 'Tanpa Medali' },
+  { value: 'GOLD', label: 'Juara 1 (Emas)' }, { value: 'SILVER', label: 'Juara 2 (Perak)' },
+  { value: 'BRONZE', label: 'Juara 3 (Perunggu)' }, { value: 'NONE', label: 'Tanpa Medali' },
 ]
-const CAT_ICON: Record<string, string> = { OLAHRAGA: '⚽', AKADEMIK: '🎤', SENI: '🎨' }
+const CAT_ICON: Record<string, LucideIcon> = { OLAHRAGA: Dumbbell, AKADEMIK: Mic2, SENI: Palette }
 const CAT_GRAD: Record<string, string> = { OLAHRAGA: 'from-blue-500 to-cyan-500', AKADEMIK: 'from-violet-500 to-purple-500', SENI: 'from-amber-500 to-yellow-500' }
-const MEDAL_ICON: Record<string, string> = { GOLD: '🥇', SILVER: '🥈', BRONZE: '🥉', NONE: '' }
+const MEDAL_CFG: Record<string, { label: string; color: string; bg: string }> = {
+  GOLD:   { label: '#1', color: 'text-amber-400', bg: 'bg-amber-500/15' },
+  SILVER: { label: '#2', color: 'text-slate-400',  bg: 'bg-slate-400/15'  },
+  BRONZE: { label: '#3', color: 'text-orange-400', bg: 'bg-orange-500/15' },
+  NONE:   { label: '',   color: 'text-white/40',   bg: ''                 },
+}
 
 const EMPTY = { competitionId: '', teamId: '', position: '1', points: '100', medal: 'GOLD' }
 
@@ -95,8 +100,8 @@ export default function ResultsPage() {
   const teamOpts = filteredTeams.map(t => ({ value: t.id, label: `${t.name} (${t.kelas})` }))
 
   const POS_OPT = [
-    { value: '1', label: '🥇 Juara 1' }, { value: '2', label: '🥈 Juara 2' },
-    { value: '3', label: '🥉 Juara 3' }, { value: '4', label: 'Posisi 4' }, { value: '5', label: 'Posisi 5' },
+    { value: '1', label: 'Juara 1' }, { value: '2', label: 'Juara 2' },
+    { value: '3', label: 'Juara 3' }, { value: '4', label: 'Posisi 4' }, { value: '5', label: 'Posisi 5' },
   ]
 
   return (
@@ -149,19 +154,22 @@ export default function ResultsPage() {
             {Object.values(byComp).map(compResults => {
               const comp = compResults[0].competition
               const grad = CAT_GRAD[comp.category] || 'from-blue-500 to-violet-500'
-              const icon = CAT_ICON[comp.category] || '🏆'
               return (
                 <div key={comp.id} className="glass-card rounded-2xl overflow-hidden">
                   <div className={`h-1.5 bg-gradient-to-r ${grad}`} />
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className="text-2xl">{icon}</span>
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0`}>
+                        {(() => { const Icon = CAT_ICON[comp.category] || Trophy; return <Icon className="w-5 h-5 text-white" /> })()}
+                      </div>
                       <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</h3>
                     </div>
                     <div className="space-y-2">
                       {compResults.map(r => (
                         <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl group hover:bg-white/[0.03] transition" style={{ background: 'var(--subtle-bg)' }}>
-                          <span className="text-lg w-7 text-center flex-shrink-0">{r.medal && MEDAL_ICON[r.medal] || `#${r.position}`}</span>
+                          {(() => { const mc = MEDAL_CFG[r.medal || 'NONE']; return (
+                            <span className={`text-xs font-bold w-7 text-center flex-shrink-0 px-1 py-0.5 rounded ${mc.bg} ${mc.color}`}>{mc.label || `#${r.position}`}</span>
+                          ) })()}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{r.team.name}</p>
                             <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{r.team.kelas} · {r.points} pts</p>

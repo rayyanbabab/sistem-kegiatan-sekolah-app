@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Calendar, Clock, MapPin, CheckCircle2, Hourglass, RefreshCw } from 'lucide-react'
+import { Calendar, Clock, MapPin, CheckCircle2, Hourglass, RefreshCw, Dumbbell, Mic2, Palette, LucideIcon } from 'lucide-react'
 
 interface Competition {
   id: string; name: string; category: string; date: string
@@ -9,10 +9,10 @@ interface Competition {
   event: { id: string; name: string }
 }
 
-const CAT_CFG: Record<string, { icon: string; color: string }> = {
-  OLAHRAGA: { icon: '⚽', color: 'from-blue-500 to-cyan-500' },
-  AKADEMIK:  { icon: '🎤', color: 'from-violet-500 to-purple-500' },
-  SENI:      { icon: '🎨', color: 'from-amber-500 to-yellow-500' },
+const CAT_CFG: Record<string, { icon: LucideIcon; color: string }> = {
+  OLAHRAGA: { icon: Dumbbell, color: 'from-blue-500 to-cyan-500' },
+  AKADEMIK:  { icon: Mic2,     color: 'from-violet-500 to-purple-500' },
+  SENI:      { icon: Palette,  color: 'from-amber-500 to-yellow-500' },
 }
 
 const groupByDate = (items: Competition[]) => {
@@ -134,7 +134,9 @@ export default function SchedulePage() {
                   return (
                     <div key={item.id} className={`glass-card rounded-2xl p-4 hover:border-white/20 transition-all hover:-translate-y-0.5 ${status === 'past' ? 'opacity-50' : ''}`}>
                       <div className="flex items-center gap-4">
-                        <span className="text-3xl flex-shrink-0">{cfg.icon}</span>
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.color} flex items-center justify-center flex-shrink-0`}>
+                          <cfg.icon className="w-5 h-5 text-white" />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{item.name}</h3>
@@ -160,7 +162,10 @@ export default function SchedulePage() {
       {/* Tips */}
       {!loading && (
         <div className="glass-card rounded-2xl p-5" style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.03)' }}>
-          <p className="text-sm font-semibold text-amber-400 mb-3">💡 Tips Persiapan</p>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="w-4 h-4 text-amber-400" />
+            <p className="text-sm font-semibold text-amber-400">Tips Persiapan</p>
+          </div>
           <ul className="space-y-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
             <li>• Pastikan tim sudah terdaftar sebelum hari pelaksanaan</li>
             <li>• Hadir tepat waktu minimal 15 menit sebelum jadwal</li>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, ReactNode } from 'react'
+import React, { Fragment, ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 interface ModalProps {
@@ -136,3 +136,117 @@ export function SubmitButton({ loading, label, loadingLabel = 'Menyimpan...' }: 
     </button>
   )
 }
+
+interface ImageUploadProps {
+  value: string | null | undefined
+  onChange: (base64: string | null) => void
+  shape?: 'circle' | 'square'
+  size?: number
+  placeholder?: string
+  maxSizeKB?: number
+}
+
+export function ImageUpload({ value, onChange, shape = 'circle', size = 80, placeholder = 'Klik untuk upload foto', maxSizeKB = 500 }: ImageUploadProps) {
+  const fileRef = React.useRef<HTMLInputElement>(null)
+
+  const compressImage = (file: File, maxKB: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let w = img.width
+          let h = img.height
+          const maxDim = 800
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim }
+            else { w = Math.round((w * maxDim) / h); h = maxDim }
+          }
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, w, h)
+          // Try quality 0.8 → 0.6 → 0.4 until < maxKB
+          let quality = 0.8
+          let dataUrl = canvas.toDataURL('image/jpeg', quality)
+          while (dataUrl.length > maxKB * 1024 * 1.37 && quality > 0.3) {
+            quality -= 0.1
+            dataUrl = canvas.toDataURL('image/jpeg', quality)
+          }
+          if (dataUrl.length > maxKB * 1024 * 1.37) {
+            reject(new Error(`Gambar terlalu besar setelah kompresi. Coba gunakan gambar yang lebih kecil.`))
+          } else {
+            resolve(dataUrl)
+          }
+        }
+        img.onerror = () => reject(new Error('Gagal membaca gambar'))
+        img.src = e.target!.result as string
+      }
+      reader.onerror = () => reject(new Error('Gagal membaca file'))
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diperbolehkan (JPG, PNG, GIF, WebP)')
+      return
+    }
+    try {
+      const compressed = await compressImage(file, maxSizeKB)
+      onChange(compressed)
+    } catch (err: any) {
+      alert(err.message || 'Gagal memproses gambar')
+    }
+    e.target.value = ''
+  }
+
+  const shapeClass = shape === 'circle' ? 'rounded-full' : 'rounded-xl'
+
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className={`flex-shrink-0 overflow-hidden cursor-pointer hover:opacity-80 transition relative group`}
+        style={{ width: size, height: size }}
+        onClick={() => fileRef.current?.click()}
+      >
+        <div className={`w-full h-full ${shapeClass} overflow-hidden`}
+          style={{ background: 'var(--subtle-bg)', border: '2px dashed var(--subtle-border)' }}>
+          {value ? (
+            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-2xl">📷</span>
+            </div>
+          )}
+        </div>
+        <div className={`absolute inset-0 ${shapeClass} bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center`}>
+          <span className="text-white text-lg">✏️</span>
+        </div>
+      </div>
+      <div className="flex-1">
+        <button type="button" onClick={() => fileRef.current?.click()}
+          className="px-3 py-2 rounded-xl text-xs font-medium transition"
+          style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+          {value ? '🔄 Ganti Foto' : '📁 Pilih Foto'}
+        </button>
+        {value && (
+          <button type="button" onClick={() => onChange(null)}
+            className="ml-2 px-3 py-2 rounded-xl text-xs font-medium transition text-red-400 hover:bg-red-500/10"
+            style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+            🗑️ Hapus
+          </button>
+        )}
+        <p className="text-[10px] mt-1.5" style={{ color: 'var(--text-faint)' }}>
+          {placeholder}
+          <br />Maks {maxSizeKB}KB · JPG, PNG, WebP
+        </p>
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  )
+}
+

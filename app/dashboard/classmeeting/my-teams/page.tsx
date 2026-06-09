@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
-import { Trophy, Users, Plus, CheckCircle, Clock, AlertCircle, ChevronRight, RefreshCw } from 'lucide-react'
+import { Trophy, Users, Plus, CheckCircle, Clock, AlertCircle, ChevronRight, RefreshCw, Dumbbell, Mic2, Palette, LucideIcon } from 'lucide-react'
 
 interface TeamMember { id: string; name: string }
 interface Team {
@@ -18,7 +18,7 @@ const STATUS_CFG: Record<string, { label: string; Icon: any; text: string; bg: s
   REGISTERED: { label: 'Menunggu',   Icon: Clock,       text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', bar: 'bg-amber-400' },
   REJECTED:   { label: 'Ditolak',    Icon: AlertCircle, text: 'text-red-400',   bg: 'bg-red-500/10',   border: 'border-red-500/20',   bar: 'bg-red-400'   },
 }
-const CAT_ICON: Record<string, string> = { OLAHRAGA: '⚽', AKADEMIK: '🎤', SENI: '🎨' }
+const CAT_ICON: Record<string, LucideIcon> = { OLAHRAGA: Dumbbell, AKADEMIK: Mic2, SENI: Palette }
 const CAT_GRAD: Record<string, string> = { OLAHRAGA: 'from-blue-500 to-cyan-500', AKADEMIK: 'from-violet-500 to-purple-500', SENI: 'from-amber-500 to-yellow-500' }
 
 export default function MyTeamsPage() {
@@ -77,8 +77,8 @@ export default function MyTeamsPage() {
                     <div className="p-5">
                       <div className="flex items-start justify-between gap-4 mb-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-2xl shadow-lg`}>
-                            {CAT_ICON[team.competition.category] || '🏆'}
+                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center shadow-lg`}>
+                            {(() => { const Icon = CAT_ICON[team.competition.category] || Trophy; return <Icon className="w-6 h-6 text-white" /> })()}
                           </div>
                           <div>
                             <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{team.name}</h3>
@@ -116,8 +116,8 @@ export default function MyTeamsPage() {
                 const grad = CAT_GRAD[comp.category] || 'from-blue-500 to-violet-500'
                 return (
                   <div key={comp.id} className="glass-card rounded-2xl p-4 flex items-center gap-4 hover:border-white/20 transition-all">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-gradient-to-br ${grad}`}>
-                      {CAT_ICON[comp.category] || '🏆'}
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${grad}`}>
+                      {(() => { const Icon = CAT_ICON[comp.category] || Trophy; return <Icon className="w-5 h-5 text-white" /> })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</p>

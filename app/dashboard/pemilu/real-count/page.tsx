@@ -18,7 +18,7 @@ interface ResultData {
 }
 
 const GRADIENTS = ['from-amber-500 to-yellow-400', 'from-slate-400 to-slate-300', 'from-orange-600 to-amber-500', 'from-blue-500 to-cyan-400']
-const RANK_ICONS = ['🥇', '🥈', '🥉', '4️⃣']
+const RANK_COLORS = ['text-amber-400', 'text-slate-400', 'text-orange-400', 'text-white/40']
 
 export default function RealCountPage() {
   const [data, setData] = useState<ResultData | null>(null)
@@ -120,7 +120,9 @@ export default function RealCountPage() {
                 <div key={c.id} className="glass-card rounded-2xl p-5 hover:border-white/20 transition-all">
                   <div className="flex items-center gap-4">
                     {/* Rank */}
-                    <span className="text-2xl flex-shrink-0 w-9 text-center">{RANK_ICONS[rank] || `${rank + 1}`}</span>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black ${rank < 3 ? `bg-gradient-to-br ${GRADIENTS[rank]} shadow-md` : 'bg-white/[0.05]'} ${RANK_COLORS[rank] || 'text-white/40'}`}>
+                      {rank + 1}
+                    </div>
 
                     {/* Avatar */}
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${GRADIENTS[rank] || 'from-blue-500 to-violet-500'} flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg`}>

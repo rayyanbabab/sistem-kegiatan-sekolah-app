@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Megaphone, Plus, Edit3, Trash2, RefreshCw, Filter } from 'lucide-react'
+import { Megaphone, Plus, Edit3, Trash2, RefreshCw, Trophy, Vote, AlertTriangle, LucideIcon } from 'lucide-react'
 import { Modal, ConfirmDialog, FormField, Input, Select, Textarea, SubmitButton } from '@/components/ui/crud'
 
 interface Announcement {
@@ -15,11 +15,11 @@ const TYPE_OPTS = [
   { value: 'UMUM', label: 'Umum' }, { value: 'CLASSMEETING', label: 'Classmeeting' },
   { value: 'PEMILU', label: 'Pemilu' }, { value: 'URGENT', label: 'Urgent' },
 ]
-const TYPE_CFG: Record<string, { color: string; bg: string; border: string; icon: string }> = {
-  UMUM:        { color: 'text-blue-400',  bg: 'bg-blue-500/10',  border: 'border-blue-500/20',  icon: '📢' },
-  CLASSMEETING:{ color: 'text-violet-400',bg: 'bg-violet-500/10',border: 'border-violet-500/20',icon: '🏆' },
-  PEMILU:      { color: 'text-pink-400',  bg: 'bg-pink-500/10',  border: 'border-pink-500/20',  icon: '🗳️' },
-  URGENT:      { color: 'text-red-400',   bg: 'bg-red-500/10',   border: 'border-red-500/20',   icon: '🚨' },
+const TYPE_CFG: Record<string, { color: string; bg: string; border: string; icon: LucideIcon }> = {
+  UMUM:        { color: 'text-blue-400',  bg: 'bg-blue-500/10',  border: 'border-blue-500/20',  icon: Megaphone },
+  CLASSMEETING:{ color: 'text-violet-400',bg: 'bg-violet-500/10',border: 'border-violet-500/20',icon: Trophy },
+  PEMILU:      { color: 'text-pink-400',  bg: 'bg-pink-500/10',  border: 'border-pink-500/20',  icon: Vote },
+  URGENT:      { color: 'text-red-400',   bg: 'bg-red-500/10',   border: 'border-red-500/20',   icon: AlertTriangle },
 }
 const EMPTY = { title: '', description: '', type: 'UMUM', image: '' }
 
@@ -134,7 +134,9 @@ export default function PengumumanPage() {
             const cfg = TYPE_CFG[a.type] || TYPE_CFG.UMUM
             return (
               <div key={a.id} className="glass-card rounded-2xl p-5 hover:border-white/20 transition-all group flex gap-4">
-                <span className="text-2xl flex-shrink-0">{cfg.icon}</span>
+                <div className={`w-10 h-10 rounded-xl ${cfg.bg} border ${cfg.border} flex items-center justify-center flex-shrink-0`}>
+                  <cfg.icon className={`w-5 h-5 ${cfg.color}`} />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">

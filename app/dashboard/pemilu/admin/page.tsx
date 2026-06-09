@@ -14,7 +14,7 @@ const SESS_STATUS: Record<string, { label: string; color: string; bg: string; bo
   DRAFT:  { label: 'Draft',       color: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/20' },
 }
 
-const EMPTY_CAND = { userId: '', number: 1, visiMisi: '', campaignVideo: '' }
+const EMPTY_CAND = { userId: '', number: 1, visiMisi: '', campaignVideo: '', eventId: '' }
 
 export default function VotingAdminPage() {
   const { currentUser } = useAuth()
@@ -99,7 +99,9 @@ export default function VotingAdminPage() {
 
   const openCreateCand = () => {
     setEditCand(null)
-    setCandForm({ ...EMPTY_CAND, number: (candidates.length + 1) })
+    // Pre-fill eventId from active session, or first available event
+    const defaultEventId = session?.event ? events.find(e => e.name === session.event.name)?.id || events[0]?.id || '' : events[0]?.id || ''
+    setCandForm({ ...EMPTY_CAND, number: (candidates.length + 1), eventId: defaultEventId })
     setError(''); setShowCandModal(true)
   }
   const openEditCand = (c: Candidate) => {
@@ -118,7 +120,7 @@ export default function VotingAdminPage() {
       const method = editCand ? 'PUT' : 'POST'
       const body   = editCand
         ? { visiMisi: candForm.visiMisi, campaignVideo: candForm.campaignVideo || null, number: candForm.number }
-        : { userId: candForm.userId, visiMisi: candForm.visiMisi, campaignVideo: candForm.campaignVideo || null, number: candForm.number }
+        : { userId: candForm.userId, visiMisi: candForm.visiMisi, campaignVideo: candForm.campaignVideo || null, number: candForm.number, eventId: candForm.eventId }
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) })
       const json = await res.json()
       if (json.success) { setShowCandModal(false); fetchData() }
@@ -283,9 +285,14 @@ export default function VotingAdminPage() {
       <Modal isOpen={showCandModal} onClose={() => setShowCandModal(false)} title={editCand ? `Edit Kandidat #${editCand.number}` : 'Tambah Kandidat'}>
         <form onSubmit={handleSaveCand} className="space-y-4">
           {!editCand && (
-            <FormField label="Pilih Siswa" required>
-              <Select value={candForm.userId} onChange={e => cf('userId')(e.target.value)} options={userOpts} placeholder="Pilih user..." />
-            </FormField>
+            <>
+              <FormField label="Pilih Siswa" required>
+                <Select value={candForm.userId} onChange={e => cf('userId')(e.target.value)} options={userOpts} placeholder="Pilih user..." />
+              </FormField>
+              <FormField label="Event Pemilu" required>
+                <Select value={candForm.eventId} onChange={e => cf('eventId')(e.target.value)} options={eventOpts} placeholder="Pilih event..." />
+              </FormField>
+            </>
           )}
           <FormField label="Nomor Urut" required>
             <Input type="number" min="1" value={String(candForm.number)} onChange={e => cf('number')(e.target.value)} />
