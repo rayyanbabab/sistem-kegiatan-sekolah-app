@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { BarChart3, TrendingUp, Users, Trophy, RefreshCw } from 'lucide-react'
+import { BarChart3, TrendingUp, Users, Trophy, RefreshCw, Vote, CheckCircle2 } from 'lucide-react'
 
 interface CandidateResult {
   id: string; number: number; name: string; kelas: string | null
@@ -17,8 +17,12 @@ interface ResultData {
   votingSession: VotingSessionInfo | null
 }
 
-const GRADIENTS = ['from-amber-500 to-yellow-400', 'from-slate-400 to-slate-300', 'from-orange-600 to-amber-500', 'from-blue-500 to-cyan-400']
-const RANK_COLORS = ['text-amber-400', 'text-slate-400', 'text-orange-400', 'text-white/40']
+const RANK_BADGES = [
+  'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 font-bold',
+  'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/25 font-bold',
+  'bg-amber-700/10 text-amber-700 dark:text-amber-500 border border-amber-700/25 font-bold',
+  'bg-secondary text-muted-foreground border border-border font-semibold',
+]
 
 export default function RealCountPage() {
   const [data, setData] = useState<ResultData | null>(null)
@@ -30,7 +34,7 @@ export default function RealCountPage() {
       const res = await fetch('/api/voting/results', { credentials: 'include' })
       const json = await res.json()
       if (json.success) setData(json.data)
-    } catch { /* ignore */ }
+    } catch { }
     setLoading(false)
   }, [])
 
@@ -47,114 +51,151 @@ export default function RealCountPage() {
   const maxVotes = data?.candidates.reduce((mx, c) => Math.max(mx, c.votes), 1) || 1
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <BarChart3 className="w-4 h-4 text-pink-400" />
-            <span className="text-xs text-pink-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
-            {ses?.status === 'OPEN' && (
-              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-green-500/15 border border-green-500/25 text-xs text-green-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
+            <span className="academic-badge">Pemilu OSIS 2026</span>
+            {ses?.status === 'OPEN' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full chip-active text-xs font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Sesi Pemilihan Aktif</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full chip-ended text-xs font-semibold">
+                <span>Sesi Ditutup</span>
               </span>
             )}
           </div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Real Count</h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Perolehan suara real-time</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Rekapitulasi Suara (Real Count)
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Hasil penghitungan suara sah Pemilihan Ketua OSIS secara langsung dan transparan.
+          </p>
         </div>
-        <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        <button
+          onClick={fetchData}
+          className="self-start sm:self-auto flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>Perbarui Data</span>
         </button>
       </div>
 
       {/* Session stats */}
       {ses && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { icon: Users, label: 'Total Pemilih', value: ses.totalVoters, color: 'from-blue-500 to-blue-400' },
-            { icon: Trophy, label: 'Sudah Memilih', value: ses.votedCount, color: 'from-violet-500 to-purple-400' },
-            { icon: TrendingUp, label: 'Partisipasi', value: `${ses.participationRate}%`, color: 'from-green-500 to-emerald-400' },
-          ].map(s => (
-            <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0`}>
-                <s.icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{loading ? '...' : s.value}</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 flex items-center justify-center shrink-0 border border-border">
+              <Users className="w-5 h-5" />
             </div>
-          ))}
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{ses.totalVoters}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar Pemilih</p>
+            </div>
+          </div>
+
+          <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 flex items-center justify-center shrink-0 border border-border">
+              <Vote className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{ses.votedCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Suara Masuk</p>
+            </div>
+          </div>
+
+          <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 flex items-center justify-center shrink-0 border border-border">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{ses.participationRate}%</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Partisipasi</p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Partisipasi progress */}
       {ses && (
-        <div className="glass-card rounded-2xl p-5">
-          <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-faint)' }}>
-            <span>Tingkat Partisipasi</span>
-            <span className="font-semibold text-green-400">{ses.participationRate}%</span>
+        <div className="surface-card p-5 space-y-2">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Progres Partisipasi Seluruh Siswa</span>
+            <span className="font-bold text-foreground">{ses.votedCount} dari {ses.totalVoters} siswa ({ses.participationRate}%)</span>
           </div>
-          <div className="w-full rounded-full h-3" style={{ background: 'var(--subtle-bg)' }}>
-            <div className="bg-gradient-to-r from-blue-500 to-violet-500 h-3 rounded-full transition-all duration-1000" style={{ width: `${ses.participationRate}%` }} />
+          <div className="w-full rounded-full h-2.5 bg-muted overflow-hidden">
+            <div
+              className="bg-primary h-2.5 rounded-full transition-all duration-700"
+              style={{ width: `${ses.participationRate}%` }}
+            />
           </div>
         </div>
       )}
 
       {/* Candidates hasil */}
       {loading ? (
-        <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-24 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}</div>
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="surface-card rounded-xl h-24 animate-pulse bg-muted" />)}
+        </div>
       ) : !data || data.candidates.length === 0 ? (
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada data voting</p>
+        <div className="surface-card rounded-xl p-12 text-center border border-dashed border-border">
+          <BarChart3 className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <p className="font-semibold text-foreground">Belum ada data perolehan suara</p>
+          <p className="text-xs text-muted-foreground mt-1">Data akan otomatis terupdate saat pemilih memberikan suara.</p>
         </div>
       ) : (
-        <>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Peringkat Kandidat</p>
-          <div className="space-y-3">
-            {data.ranked.map((c, rank) => {
-              const barWidth = maxVotes > 0 ? (c.votes / maxVotes) * 100 : 0
-              return (
-                <div key={c.id} className="glass-card rounded-2xl p-5 hover:border-white/20 transition-all">
-                  <div className="flex items-center gap-4">
-                    {/* Rank */}
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black ${rank < 3 ? `bg-gradient-to-br ${GRADIENTS[rank]} shadow-md` : 'bg-white/[0.05]'} ${RANK_COLORS[rank] || 'text-white/40'}`}>
-                      {rank + 1}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Peringkat Perolehan Suara Kandidat</h2>
+          {data.ranked.map((c, rank) => {
+            const barWidth = maxVotes > 0 ? (c.votes / maxVotes) * 100 : 0
+            const badgeStyle = RANK_BADGES[rank] || RANK_BADGES[3]
+
+            return (
+              <div key={c.id} className="surface-card rounded-xl p-4 sm:p-5 hover:border-primary/40 transition-colors">
+                <div className="flex items-center gap-3.5 sm:gap-4">
+                  {/* Rank Number */}
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs shadow-xs ${badgeStyle}`}>
+                    {rank + 1}
+                  </div>
+
+                  {/* Candidate Avatar */}
+                  <div className="w-11 h-11 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 overflow-hidden font-bold text-sm border border-border">
+                    {(c.avatar || c.photo) ? (
+                      <img src={c.photo || c.avatar!} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{c.number}</span>
+                    )}
+                  </div>
+
+                  {/* Candidate Info and Vote Bars */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1.5 gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm text-foreground truncate">{c.name}</p>
+                        <p className="text-xs text-muted-foreground">Paslon #{c.number} • Kelas {c.kelas || '-'}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-lg font-extrabold text-foreground leading-tight">{c.votes} suara</p>
+                        <p className="text-xs font-semibold text-primary">{c.percentage}%</p>
+                      </div>
                     </div>
 
-                    {/* Avatar */}
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${GRADIENTS[rank] || 'from-blue-500 to-violet-500'} flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg`}>
-                      {(c.avatar || c.photo) ? <img src={c.photo || c.avatar!} alt={c.name} className="w-full h-full object-cover" /> : <span className="text-white font-bold">{c.number}</span>}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div>
-                          <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
-                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Kandidat #{c.number} · {c.kelas}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0 ml-4">
-                          <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{c.votes}</p>
-                          <p className="text-xs text-blue-400 font-semibold">{c.percentage}%</p>
-                        </div>
-                      </div>
-                      {/* Progress bar */}
-                      <div className="w-full rounded-full h-2" style={{ background: 'var(--subtle-bg)' }}>
-                        <div
-                          className={`h-2 rounded-full bg-gradient-to-r ${GRADIENTS[rank] || 'from-blue-500 to-violet-500'} transition-all duration-1000`}
-                          style={{ width: `${barWidth}%` }}
-                        />
-                      </div>
+                    {/* Clean Progress Bar */}
+                    <div className="w-full rounded-full h-2 bg-muted overflow-hidden">
+                      <div
+                        className="h-2 rounded-full bg-primary transition-all duration-700"
+                        style={{ width: `${barWidth}%` }}
+                      />
                     </div>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </>
+              </div>
+            )
+          })}
+        </div>
       )}
     </div>
   )

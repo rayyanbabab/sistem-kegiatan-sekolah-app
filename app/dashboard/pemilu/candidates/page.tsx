@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Trophy, Users, Star, RefreshCw, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import { Trophy, Users, Search, RefreshCw, ExternalLink, ArrowRight, Video, ChevronDown, ChevronUp, Vote } from 'lucide-react'
 
 interface Candidate {
-  id: string; number: number; visiMisi: string; campaignVideo: string | null; photo: string | null
+  id: string
+  number: number
+  visiMisi: string
+  campaignVideo: string | null
+  photo: string | null
   votes: number
   user: { id: string; name: string; kelas: string | null; avatar: string | null }
 }
@@ -14,6 +19,7 @@ export default function CandidatesPage() {
   const { currentUser } = useAuth()
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const fetchData = async () => {
@@ -28,96 +34,185 @@ export default function CandidatesPage() {
 
   useEffect(() => { fetchData() }, [])
 
-  const GRADIENTS = [
-    'from-blue-500 to-cyan-500', 'from-violet-500 to-purple-500',
-    'from-pink-500 to-rose-500', 'from-amber-500 to-orange-500',
-  ]
+  const filtered = candidates.filter(c =>
+    c.user.name.toLowerCase().includes(search.toLowerCase()) ||
+    (c.user.kelas && c.user.kelas.toLowerCase().includes(search.toLowerCase())) ||
+    c.visiMisi.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const isPrivileged = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'PANITIA'
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-4 h-4 text-violet-400" />
-            <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS 2026</span>
-          </div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Kandidat</h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>{candidates.length} kandidat terdaftar</p>
+          <span className="academic-badge mb-2">Pemilu Raya OSIS</span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Daftar Kandidat Paslon
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Pelajari rekam jejak, visi, misi, dan gagasan program kerja para kandidat sebelum memberikan suara.
+          </p>
         </div>
-        <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/pemilu/voting">
+            <button className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs">
+              <Vote className="w-3.5 h-3.5" />
+              <span>Buka Bilik Suara</span>
+            </button>
+          </Link>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Perbarui</span>
+          </button>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-64 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
+      {/* Filter and Search */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-72">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Cari kandidat atau kelas..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-8 pr-3 py-2 rounded-lg text-xs bg-background border border-input text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
+          />
         </div>
-      ) : candidates.length === 0 ? (
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <Users className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada kandidat</p>
+        <p className="text-xs text-muted-foreground self-start sm:self-center">
+          Menampilkan {filtered.length} dari {candidates.length} paslon
+        </p>
+      </div>
+
+      {/* Candidates Grid */}
+      {loading ? (
+        <div className="grid md:grid-cols-2 gap-5">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="surface-card rounded-xl h-64 animate-pulse bg-muted" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="surface-card rounded-xl p-12 text-center border border-dashed border-border">
+          <Users className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-foreground">
+            {search ? 'Tidak ada kandidat sesuai pencarian' : 'Belum Ada Paslon Terdaftar'}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Data kandidat paslon akan ditampilkan setelah panitia mendaftarkannya ke sistem.
+          </p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-5">
-          {candidates.map((c, idx) => {
-            const grad = GRADIENTS[idx % GRADIENTS.length]
+          {filtered.map(c => {
             const isExpanded = expandedId === c.id
-            return (
-              <div key={c.id} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all">
-                {/* Gradient bar */}
-                <div className={`h-1.5 bg-gradient-to-r ${grad}`} />
+            const photoUrl = c.photo || c.user.avatar
 
-                <div className="p-5">
-                  {/* Candidate info */}
+            return (
+              <div
+                key={c.id}
+                className="surface-card rounded-xl border border-border p-5 sm:p-6 flex flex-col justify-between hover:border-primary/40 transition-colors"
+              >
+                <div>
+                  {/* Paslon Header */}
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="relative flex-shrink-0">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-2xl font-bold text-white shadow-lg overflow-hidden`}>
-                        {c.user.avatar ? (
-                          <img src={c.user.avatar} alt={c.user.name} className="w-full h-full object-cover" />
-                        ) : c.user.name.charAt(0)}
+                    <div className="relative shrink-0">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center font-bold text-lg text-foreground">
+                        {photoUrl ? (
+                          <img
+                            src={photoUrl}
+                            alt={c.user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          c.user.name.charAt(0)
+                        )}
                       </div>
-                      <div className={`absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-gradient-to-br ${grad} border-2 flex items-center justify-center text-white text-xs font-bold`} style={{ borderColor: 'var(--glass-bg)' }}>
-                        {c.number}
+                      <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[11px] font-bold shadow-xs">
+                        #{c.number}
                       </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <Star className="w-3.5 h-3.5 text-amber-400" />
-                        <span className="text-xs text-amber-400 font-medium">Kandidat #{c.number}</span>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                          Pasangan Calon #{c.number}
+                        </span>
+                        {c.user.kelas && (
+                          <span className="text-[11px] text-muted-foreground">
+                            • Kelas {c.user.kelas}
+                          </span>
+                        )}
                       </div>
-                      <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{c.user.name}</h3>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.user.kelas}</p>
+                      <h2 className="font-bold text-base text-foreground truncate">
+                        {c.user.name}
+                      </h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Kandidat Ketua OSIS SMKS Digital
+                      </p>
                     </div>
-                    {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'PANITIA') && (
-                      <div className="flex-shrink-0 text-right">
-                        <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{c.votes}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>suara</p>
+
+                    {isPrivileged && (
+                      <div className="shrink-0 text-right pl-2">
+                        <span className="text-lg font-bold text-foreground block leading-tight">
+                          {c.votes}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">
+                          Suara
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Visi Misi */}
-                  <div className="p-3 rounded-xl mb-3" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Visi & Misi</p>
-                    <p className={`text-xs leading-relaxed ${isExpanded ? '' : 'line-clamp-3'}`} style={{ color: 'var(--text-secondary)' }}>
+                  {/* Visi Misi Container */}
+                  <div className="p-3.5 rounded-lg bg-muted/40 border border-border/80 mb-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-semibold text-foreground">Visi & Pokok Gagasan:</span>
+                      {c.visiMisi.length > 140 && (
+                        <button
+                          onClick={() => setExpandedId(isExpanded ? null : c.id)}
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+                        >
+                          {isExpanded ? (
+                            <><span>Ringkas</span><ChevronUp className="w-3 h-3" /></>
+                          ) : (
+                            <><span>Baca Penuh</span><ChevronDown className="w-3 h-3" /></>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    <p className={`text-xs text-muted-foreground leading-relaxed ${isExpanded ? '' : 'line-clamp-3'}`}>
                       {c.visiMisi}
                     </p>
-                    {c.visiMisi.length > 120 && (
-                      <button onClick={() => setExpandedId(isExpanded ? null : c.id)} className="text-xs mt-1 font-medium text-blue-400 hover:text-blue-300">
-                        {isExpanded ? 'Lihat lebih sedikit' : 'Baca selengkapnya'}
-                      </button>
-                    )}
                   </div>
+                </div>
 
-                  {/* Campaign Video */}
-                  {c.campaignVideo && (
-                    <a href={c.campaignVideo} target="_blank" rel="noopener noreferrer"
-                      className={`flex items-center gap-2 w-full py-2 rounded-xl text-xs font-medium transition justify-center bg-gradient-to-r ${grad} text-white opacity-80 hover:opacity-100`}>
-                      <ExternalLink className="w-3.5 h-3.5" /> Lihat Video Kampanye
+                {/* Actions */}
+                <div className="pt-3 border-t border-border flex items-center justify-between gap-3">
+                  {c.campaignVideo ? (
+                    <a
+                      href={c.campaignVideo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Video Kampanye</span>
                     </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Profil Terverifikasi</span>
                   )}
+
+                  <Link href={`/dashboard/pemilu/candidate/${c.id}`}>
+                    <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-foreground transition-colors">
+                      <span>Detail Profil</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </Link>
                 </div>
               </div>
             )

@@ -15,22 +15,28 @@ const ThemeContext = createContext<ThemeContextType>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>('light')
 
   useEffect(() => {
-    // Load saved theme from localStorage
+    // Load saved theme from localStorage, default to 'light' for clean academic UI
     const saved = localStorage.getItem('smks-theme') as Theme | null
-    if (saved === 'light' || saved === 'dark') {
+    if (saved === 'dark' || saved === 'light') {
       setTheme(saved)
       document.documentElement.classList.toggle('light', saved === 'light')
+      document.documentElement.classList.toggle('dark', saved === 'dark')
+    } else {
+      setTheme('light')
+      document.documentElement.classList.add('light')
+      document.documentElement.classList.remove('dark')
     }
   }, [])
 
   const toggleTheme = () => {
     setTheme(prev => {
-      const next = prev === 'dark' ? 'light' : 'dark'
+      const next = prev === 'light' ? 'dark' : 'light'
       localStorage.setItem('smks-theme', next)
       document.documentElement.classList.toggle('light', next === 'light')
+      document.documentElement.classList.toggle('dark', next === 'dark')
       return next
     })
   }

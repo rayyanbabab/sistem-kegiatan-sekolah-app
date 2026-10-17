@@ -17,17 +17,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/30 animate-pulse">
-            <span className="text-white font-bold text-lg">SM</span>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center mx-auto font-bold text-base shadow-sm">
+            SM
           </div>
-          <div className="flex items-center gap-2 justify-center">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-          <p className="text-sm" style={{ color: 'var(--text-faint)' }}>Memuat dashboard...</p>
+          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-muted-foreground font-medium">Memuat sistem kegiatan...</p>
         </div>
       </div>
     )
@@ -36,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
       <DashboardSidebar />
       <main className="flex-1 overflow-auto scrollbar-thin">
         <div className="min-h-full">

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { Trophy, Plus, Edit3, Trash2, RefreshCw, Calendar, Clock, MapPin, AlertTriangle } from 'lucide-react'
 import { Modal, ConfirmDialog, FormField, Input, Select, SubmitButton } from '@/components/ui/crud'
+import { renderCategoryIcon } from '@/app/dashboard/settings/categories/page'
 
 interface Competition {
   id: string; name: string; category: string; date: string
@@ -14,18 +15,18 @@ interface Competition {
 interface Event    { id: string; name: string }
 interface Category { id: string; name: string; icon: string; color: string }
 
-const COLOR_MAP: Record<string, { bg: string; color: string; border: string; grad: string }> = {
-  blue:   { bg: 'bg-blue-500/10',   color: 'text-blue-400',   border: 'border-blue-500/20',   grad: 'from-blue-500 to-cyan-500' },
-  violet: { bg: 'bg-violet-500/10', color: 'text-violet-400', border: 'border-violet-500/20', grad: 'from-violet-500 to-purple-500' },
-  amber:  { bg: 'bg-amber-500/10',  color: 'text-amber-400',  border: 'border-amber-500/20',  grad: 'from-amber-500 to-yellow-500' },
-  green:  { bg: 'bg-green-500/10',  color: 'text-green-400',  border: 'border-green-500/20',  grad: 'from-green-500 to-emerald-500' },
-  pink:   { bg: 'bg-pink-500/10',   color: 'text-pink-400',   border: 'border-pink-500/20',   grad: 'from-pink-500 to-rose-500' },
-  cyan:   { bg: 'bg-cyan-500/10',   color: 'text-cyan-400',   border: 'border-cyan-500/20',   grad: 'from-cyan-500 to-blue-400' },
-  red:    { bg: 'bg-red-500/10',    color: 'text-red-400',    border: 'border-red-500/20',    grad: 'from-red-500 to-orange-500' },
-  orange: { bg: 'bg-orange-500/10', color: 'text-orange-400', border: 'border-orange-500/20', grad: 'from-orange-500 to-amber-500' },
+const COLOR_MAP: Record<string, { bg: string; color: string; border: string }> = {
+  blue:   { bg: 'bg-primary/10',    color: 'text-primary',          border: 'border-primary/20' },
+  violet: { bg: 'bg-indigo-500/10', color: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/20' },
+  amber:  { bg: 'bg-amber-500/10',  color: 'text-amber-600 dark:text-amber-400',   border: 'border-amber-500/20' },
+  green:  { bg: 'bg-emerald-500/10',color: 'text-emerald-600 dark:text-emerald-400',border: 'border-emerald-500/20' },
+  pink:   { bg: 'bg-rose-500/10',   color: 'text-rose-600 dark:text-rose-400',     border: 'border-rose-500/20' },
+  cyan:   { bg: 'bg-sky-500/10',    color: 'text-sky-600 dark:text-sky-400',       border: 'border-sky-500/20' },
+  red:    { bg: 'bg-red-500/10',    color: 'text-red-600 dark:text-red-400',       border: 'border-red-500/20' },
+  orange: { bg: 'bg-orange-500/10', color: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/20' },
 }
 
-const FALLBACK_CFG = { bg: 'bg-blue-500/10', color: 'text-blue-400', border: 'border-blue-500/20', grad: 'from-blue-500 to-cyan-500' }
+const FALLBACK_CFG = { bg: 'bg-primary/10', color: 'text-primary', border: 'border-primary/20' }
 
 const EMPTY = { name: '', category: '', date: '', time: '08:00', location: '', eventId: '' }
 
@@ -63,11 +64,11 @@ export default function CompetitionsPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Helpers — lookup category metadata by name
+  // Lookup category metadata by name
   const getCatMeta = (catName: string) => {
     const cat = categories.find(c => c.name === catName)
     const colorCfg = COLOR_MAP[cat?.color || 'blue'] || FALLBACK_CFG
-    return { icon: cat?.icon || '🏅', ...colorCfg }
+    return { icon: cat?.icon || 'trophy', ...colorCfg }
   }
 
   const openCreate = () => {
@@ -91,7 +92,7 @@ export default function CompetitionsPage() {
       const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(form) })
       const json = await res.json()
       if (json.success) { setShowModal(false); fetchData() }
-      else setError(json.error || 'Gagal menyimpan')
+      else setError(json.error || 'Gagal menyimpan kompetisi')
     } catch { setError('Gagal terhubung ke server') }
     setSaving(false)
   }
@@ -109,39 +110,50 @@ export default function CompetitionsPage() {
 
   const displayed  = filterCat === 'ALL' ? comps : comps.filter(c => c.category === filterCat)
   const eventOpts  = events.map(e => ({ value: e.id, label: e.name }))
-  const catOpts    = categories.map(c => ({ value: c.name, label: `${c.icon} ${c.name}` }))
-  const FILTERS    = [{ value: 'ALL', label: 'Semua' }, ...categories.map(c => ({ value: c.name, label: `${c.icon} ${c.name}` }))]
+  const catOpts    = categories.map(c => ({ value: c.name, label: c.name }))
+  const FILTERS    = [{ value: 'ALL', label: 'Semua Kategori' }, ...categories.map(c => ({ value: c.name, label: c.name }))]
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1"><Trophy className="w-4 h-4 text-amber-400" /><span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Classmeeting</span></div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Kompetisi</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{comps.length} kompetisi terdaftar</p>
+          <span className="academic-badge mb-2">Pekan Classmeeting</span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Daftar Cabang Lomba</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{comps.length} cabang kompetisi siap ditandingkan.</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition"
-            style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Perbarui</span>
           </button>
           {isAdmin && (
-            <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg hover:opacity-90 transition">
-              <Plus className="w-4 h-4" /> Tambah Kompetisi
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Lomba</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Filter Chips */}
+      <div className="flex gap-1.5 flex-wrap">
         {FILTERS.map(f2 => (
-          <button key={f2.value} onClick={() => setFilterCat(f2.value)}
-            className="px-3 py-1.5 rounded-xl text-xs font-medium transition"
-            style={filterCat === f2.value
-              ? { background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }
-              : { background: 'var(--subtle-bg)', color: 'var(--text-muted)', border: '1px solid var(--subtle-border)' }}>
+          <button
+            key={f2.value}
+            onClick={() => setFilterCat(f2.value)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              filterCat === f2.value
+                ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-xs'
+                : 'bg-muted/40 text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+            }`}
+          >
             {f2.label}
           </button>
         ))}
@@ -149,11 +161,10 @@ export default function CompetitionsPage() {
 
       {/* Peringatan jika belum ada kategori */}
       {!loading && categories.length === 0 && isAdmin && (
-        <div className="glass-card rounded-2xl p-4 flex items-start gap-3" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-          <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Belum ada <strong style={{ color: 'var(--text-primary)' }}>kategori lomba</strong>.
-            Buat kategori terlebih dahulu di menu <strong style={{ color: '#fbbf24' }}>Settings → Kategori Lomba</strong>.
+        <div className="surface-card rounded-xl p-4 flex items-start gap-3 border border-amber-500/30 bg-amber-500/5">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <p className="text-xs sm:text-sm text-foreground">
+            Belum ada kategori cabang lomba. Buat kategori terlebih dahulu di menu <strong>Pengaturan &gt; Kategori Lomba</strong>.
           </p>
         </div>
       )}
@@ -161,46 +172,82 @@ export default function CompetitionsPage() {
       {/* Grid */}
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-40 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="surface-card rounded-xl h-44 animate-pulse bg-muted" />)}
         </div>
       ) : displayed.length === 0 ? (
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <Trophy className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada kompetisi</p>
-          {isAdmin && <button onClick={openCreate} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 transition">Tambah Kompetisi</button>}
+        <div className="surface-card rounded-xl p-12 text-center border border-dashed border-border">
+          <Trophy className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <p className="font-semibold text-foreground">Belum ada cabang lomba di kategori ini</p>
+          <p className="text-xs text-muted-foreground mt-1">Tambahkan cabang lomba baru untuk membuka registrasi tim delegasi kelas.</p>
+          {isAdmin && (
+            <button
+              onClick={openCreate}
+              className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Tambah Cabang Lomba
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {displayed.map(comp => {
             const meta = getCatMeta(comp.category)
             return (
-              <div key={comp.id} className="glass-card rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-0.5 group">
-                <div className={`h-1.5 bg-gradient-to-r ${meta.grad}`} />
-                <div className="p-5">
+              <div key={comp.id} className="surface-card rounded-xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between group">
+                <div>
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{meta.icon}</span>
-                      <div>
-                        <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</h3>
-                        <span className={`text-[10px] font-semibold ${meta.color}`}>{comp.event.name}</span>
+                      <div className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground/80 shrink-0">
+                        {renderCategoryIcon(meta.icon, "w-4 h-4 text-foreground/80")}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm text-foreground truncate">{comp.name}</h3>
+                        <span className={`text-[11px] font-semibold ${meta.color}`}>{comp.event.name}</span>
                       </div>
                     </div>
                     {isAdmin && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
-                        <button onClick={() => openEdit(comp)} className="p-1.5 rounded-lg hover:bg-white/5 transition" style={{ color: 'var(--text-muted)' }}><Edit3 className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setDeleteTarget(comp)} className="p-1.5 rounded-lg hover:bg-red-500/10 transition text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button
+                          onClick={() => openEdit(comp)}
+                          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="Edit lomba"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(comp)}
+                          className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
+                          title="Hapus lomba"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     )}
                   </div>
-                  <div className="space-y-1.5 text-xs" style={{ color: 'var(--text-faint)' }}>
-                    <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" />{new Date(comp.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" />{comp.time} WIB</span>
-                    <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" />{comp.location}</span>
+
+                  <div className="space-y-1.5 text-xs text-muted-foreground pt-1">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                      {new Date(comp.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                      {comp.time} WIB
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                      {comp.location}
+                    </span>
                   </div>
-                  <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--subtle-border)' }}>
-                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${meta.bg} ${meta.color} border ${meta.border}`}>{meta.icon} {comp.category}</span>
-                    <span className="text-xs" style={{ color: 'var(--text-faint)' }}>{comp._count.teams} tim</span>
-                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${meta.bg} ${meta.color} ${meta.border}`}>
+                    {comp.category}
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {comp._count.teams} tim terdaftar
+                  </span>
                 </div>
               </div>
             )
@@ -209,39 +256,47 @@ export default function CompetitionsPage() {
       )}
 
       {/* Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editTarget ? 'Edit Kompetisi' : 'Tambah Kompetisi'}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editTarget ? 'Edit Cabang Lomba' : 'Tambah Cabang Lomba'}>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField label="Nama Kompetisi" required>
-            <Input value={form.name} onChange={e => f('name')(e.target.value)} placeholder="cth. Futsal Putra" required />
+          <FormField label="Nama Cabang Lomba" required>
+            <Input value={form.name} onChange={e => f('name')(e.target.value)} placeholder="Contoh: Futsal Putra Antarkelas" required />
           </FormField>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Kategori" required>
-              {catOpts.length === 0
-                ? <p className="text-xs text-amber-400 py-2">Belum ada kategori. Buat di Settings.</p>
-                : <Select value={form.category} onChange={e => f('category')(e.target.value)} options={catOpts} placeholder="Pilih kategori..." />}
+              {catOpts.length === 0 ? (
+                <p className="text-xs text-destructive py-2">Belum ada kategori lomba.</p>
+              ) : (
+                <Select value={form.category} onChange={e => f('category')(e.target.value)} options={catOpts} placeholder="Pilih kategori..." />
+              )}
             </FormField>
             <FormField label="Event Terkait" required>
               <Select value={form.eventId} onChange={e => f('eventId')(e.target.value)} options={eventOpts} placeholder="Pilih event..." />
             </FormField>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Tanggal" required>
+            <FormField label="Tanggal Pelaksanaan" required>
               <Input type="date" value={form.date} onChange={e => f('date')(e.target.value)} required />
             </FormField>
-            <FormField label="Jam">
+            <FormField label="Waktu Tanding">
               <Input type="time" value={form.time} onChange={e => f('time')(e.target.value)} />
             </FormField>
           </div>
-          <FormField label="Lokasi" required>
-            <Input value={form.location} onChange={e => f('location')(e.target.value)} placeholder="cth. Lapangan Utama" required />
+          <FormField label="Lokasi Pertandingan" required>
+            <Input value={form.location} onChange={e => f('location')(e.target.value)} placeholder="Contoh: Lapangan Utama Sekolah" required />
           </FormField>
-          {error && <p className="text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
           <SubmitButton loading={saving} label={editTarget ? 'Simpan Perubahan' : 'Tambah Kompetisi'} />
         </form>
       </Modal>
 
-      <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
-        title="Hapus Kompetisi" message={`Hapus kompetisi "${deleteTarget?.name}"? Tim yang terdaftar juga akan dihapus.`} />
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Hapus Cabang Lomba"
+        message={`Apakah Anda yakin ingin menghapus cabang lomba "${deleteTarget?.name}"? Seluruh data pendaftaran tim kelas terkait akan ikut terhapus.`}
+      />
     </div>
   )
 }

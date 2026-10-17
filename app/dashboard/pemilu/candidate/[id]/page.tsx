@@ -3,25 +3,17 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Vote, Users, BarChart3, Star, ExternalLink, BookOpen, Theater, Heart, Monitor } from 'lucide-react'
+import { ArrowLeft, Vote, Users, BarChart3, Star, ExternalLink, Video, CheckCircle2, VideoOff } from 'lucide-react'
 
 interface CandidateDetail {
-  id: string; number: number; visiMisi: string
-  campaignVideo: string | null; photo: string | null
+  id: string
+  number: number
+  visiMisi: string
+  campaignVideo: string | null
+  photo: string | null
   votes: number
   user: { name: string; kelas: string | null; avatar: string | null }
 }
-
-const GRADIENTS = [
-  'from-blue-500 to-cyan-500', 'from-violet-500 to-purple-500',
-  'from-pink-500 to-rose-500', 'from-amber-500 to-orange-500',
-]
-const PROGRAMS = [
-  { icon: BookOpen, title: 'Program Akademik', desc: 'Peningkatan fasilitas belajar dan program mentoring antar siswa', color: 'from-blue-500 to-cyan-500' },
-  { icon: Theater,  title: 'Program Seni & Budaya', desc: 'Revitalisasi kegiatan seni untuk mengembangkan bakat siswa', color: 'from-violet-500 to-purple-500' },
-  { icon: Heart,    title: 'Program Sosial', desc: 'Kegiatan sosial dan gotong royong untuk masyarakat sekitar', color: 'from-pink-500 to-rose-500' },
-  { icon: Monitor,  title: 'Program Digital', desc: 'Modernisasi sistem informasi dan komunikasi OSIS', color: 'from-green-500 to-emerald-500' },
-]
 
 export default function CandidateDetailPage() {
   const params = useParams()
@@ -52,138 +44,177 @@ export default function CandidateDetailPage() {
           const j = await resultsRes.json()
           if (j.success) setTotalVotes(j.data.votingSession?.votedCount || 0)
         }
-      } catch { setNotFound(true) }
+      } catch {
+        setNotFound(true)
+      }
       setLoading(false)
     }
     if (candidateId) fetchData()
   }, [candidateId])
 
   if (loading) return (
-    <div className="p-6 max-w-4xl mx-auto space-y-4">
-      {[1,2,3].map(i => <div key={i} className="glass-card rounded-2xl h-32 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-4">
+      <div className="h-6 w-36 rounded-md bg-muted animate-pulse" />
+      <div className="surface-card rounded-xl h-64 animate-pulse bg-muted" />
+      <div className="surface-card rounded-xl h-44 animate-pulse bg-muted" />
     </div>
   )
 
   if (notFound || !candidate) return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="glass-card rounded-2xl p-16 text-center">
-        <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Kandidat Tidak Ditemukan</p>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
+      <div className="surface-card rounded-xl p-12 text-center border border-border">
+        <Users className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+        <h2 className="text-base font-bold text-foreground">Kandidat Tidak Ditemukan</h2>
+        <p className="text-xs text-muted-foreground mt-1">Data paslon tidak terdaftar atau telah dihapus.</p>
         <Link href="/dashboard/pemilu/candidates">
-          <button className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:opacity-90 transition">Kembali</button>
+          <button className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs">
+            Kembali ke Daftar Paslon
+          </button>
         </Link>
       </div>
     </div>
   )
 
-  const colorIdx = (candidate.number - 1) % GRADIENTS.length
-  const color = GRADIENTS[colorIdx]
   const pct = totalVotes > 0 ? Math.round((candidate.votes / totalVotes) * 100) : 0
+  const photoUrl = candidate.photo || candidate.user.avatar
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-5">
-      {/* Back */}
-      <Link href="/dashboard/pemilu/candidates">
-        <button className="flex items-center gap-2 text-sm transition hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
-          <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Kandidat
-        </button>
-      </Link>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+      {/* Back Button */}
+      <div>
+        <Link
+          href="/dashboard/pemilu/candidates"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali ke Daftar Kandidat</span>
+        </Link>
+      </div>
 
-      {/* Hero */}
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className={`h-1.5 bg-gradient-to-r ${color}`} />
-        <div className="p-6">
-          <div className="flex gap-6 flex-col sm:flex-row">
-            <div className="relative flex-shrink-0">
-              <div className="w-36 h-36 rounded-2xl overflow-hidden border-2" style={{ borderColor: 'var(--glass-border)' }}>
-                {(candidate.photo || candidate.user.avatar) ? (
-                  <img src={candidate.photo || candidate.user.avatar!} alt={candidate.user.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className={`w-full h-full bg-gradient-to-br ${color} flex items-center justify-center text-5xl font-bold text-white`}>{candidate.user.name.charAt(0)}</div>
-                )}
+      {/* Main Profile Card */}
+      <div className="surface-card rounded-xl border border-border overflow-hidden p-6">
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+          <div className="relative shrink-0 mx-auto sm:mx-0">
+            <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center font-bold text-3xl text-foreground">
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={candidate.user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                candidate.user.name.charAt(0)
+              )}
+            </div>
+            <div className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow-xs">
+              #{candidate.number}
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
+              <span className="academic-badge text-amber-700 dark:text-amber-300">
+                Pasangan Calon #{candidate.number}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Kelas {candidate.user.kelas || '-'}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              {candidate.user.name}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Calon Ketua OSIS SMKS Digital Periode 2026/2027
+            </p>
+
+            <div className="grid grid-cols-3 gap-3 mt-5">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border text-center">
+                <span className="text-lg font-bold text-foreground block leading-tight">
+                  #{candidate.number}
+                </span>
+                <span className="text-[11px] text-muted-foreground">Nomor Urut</span>
               </div>
-              <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}>
-                <span className="text-white font-bold">#{candidate.number}</span>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border text-center">
+                <span className="text-lg font-bold text-primary block leading-tight">
+                  {candidate.votes}
+                </span>
+                <span className="text-[11px] text-muted-foreground">Suara Masuk</span>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border text-center">
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 block leading-tight">
+                  {pct}%
+                </span>
+                <span className="text-[11px] text-muted-foreground">Persentase</span>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{candidate.user.name}</h1>
-              <p className="flex items-center gap-1.5 text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-                <Users className="w-3.5 h-3.5" /> {candidate.user.kelas}
+        {/* CTA Bar */}
+        <div className="flex flex-wrap gap-3 mt-6 pt-5 border-t border-border">
+          {candidate.campaignVideo && (
+            <a
+              href={candidate.campaignVideo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold border border-border bg-card hover:bg-muted text-foreground transition-colors"
+            >
+              <Video className="w-4 h-4 text-primary" />
+              <span>Tonton Video Kampanye</span>
+            </a>
+          )}
+          <Link href="/dashboard/pemilu/voting" className="flex-1 min-w-[200px]">
+            <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs">
+              <Vote className="w-4 h-4" />
+              <span>Beri Suara di Bilik Digital</span>
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Visi dan Misi */}
+      <div className="surface-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Star className="w-4 h-4 text-amber-500" />
+          <h2 className="font-bold text-sm text-foreground">Visi & Pokok Gagasan</h2>
+        </div>
+        <div className="p-4 rounded-lg bg-muted/30 border border-border/80">
+          <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+            {candidate.visiMisi}
+          </p>
+        </div>
+      </div>
+
+      {/* Video Preview or Info */}
+      <div className="surface-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Video className="w-4 h-4 text-primary" />
+          <h2 className="font-bold text-sm text-foreground">Media Kampanye</h2>
+        </div>
+        {candidate.campaignVideo ? (
+          <div className="p-4 rounded-lg bg-muted/30 border border-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Video Pemaparan Program</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">
+                {candidate.campaignVideo}
               </p>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Suara', value: candidate.votes, color: 'text-blue-400' },
-                  { label: 'Persentase', value: `${pct}%`, color: 'text-violet-400' },
-                  { label: 'Nomor Urut', value: `#${candidate.number}`, color: 'text-amber-400' },
-                ].map(s => (
-                  <div key={s.label} className="p-3 rounded-xl" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-                    <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>{s.label}</p>
-                  </div>
-                ))}
-              </div>
             </div>
+            <a
+              href={candidate.campaignVideo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Buka Tautan</span>
+            </a>
           </div>
-
-          <div className="flex gap-3 mt-5 pt-5" style={{ borderTop: '1px solid var(--subtle-border)' }}>
-            {candidate.campaignVideo && (
-              <a href={candidate.campaignVideo} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium flex-1 transition" style={{ background: 'var(--subtle-bg)', color: 'var(--text-muted)', border: '1px solid var(--subtle-border)' }}>
-                <ExternalLink className="w-4 h-4" /> Video Kampanye
-              </a>
-            )}
-            <Link href="/dashboard/pemilu/voting" className="flex-1">
-              <button className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r ${color} shadow-lg hover:opacity-90 transition`}>
-                <Vote className="w-4 h-4" /> Pilih Kandidat Ini
-              </button>
-            </Link>
+        ) : (
+          <div className="p-6 rounded-lg border border-dashed border-border text-center">
+            <VideoOff className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Kandidat belum menyematkan video kampanye digital.</p>
           </div>
-        </div>
-      </div>
-
-      {/* Visi Misi */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-3"><Star className="w-4 h-4 text-amber-400" /><h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Visi dan Misi</h2></div>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{candidate.visiMisi}</p>
-      </div>
-
-      {/* Program Kerja */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-4"><BarChart3 className="w-4 h-4 text-blue-400" /><h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Program Kerja</h2></div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {PROGRAMS.map(p => (
-            <div key={p.title} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)' }}>
-              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${p.color} flex items-center justify-center flex-shrink-0`}>
-                <p.icon className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{p.title}</p>
-                <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{p.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Statistik Voting */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-4"><BarChart3 className="w-4 h-4 text-violet-400" /><h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Statistik Voting</h2></div>
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Perolehan Suara</span>
-              <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{candidate.votes} / {totalVotes} suara</span>
-            </div>
-            <div className="w-full rounded-full h-2" style={{ background: 'var(--subtle-bg)' }}>
-              <div className={`h-2 rounded-full bg-gradient-to-r ${color} transition-all`} style={{ width: `${pct}%` }} />
-            </div>
-          </div>
-          <div className="text-center p-4 rounded-xl" style={{ background: 'var(--subtle-bg)' }}>
-            <p className="text-3xl font-bold text-violet-400">{pct}%</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-faint)' }}>dari total suara masuk</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

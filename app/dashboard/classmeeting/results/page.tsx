@@ -2,28 +2,49 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Trophy, Star, Medal, RefreshCw, Plus, Trash2, Dumbbell, Mic2, Palette, LucideIcon } from 'lucide-react'
-import { Modal, ConfirmDialog, FormField, Select, SubmitButton } from '@/components/ui/crud'
+import { Trophy, Star, Medal, RefreshCw, Plus, Trash2, Dumbbell, Mic2, Palette, Search, Layers, LucideIcon } from 'lucide-react'
+import { Modal, ConfirmDialog, FormField, Select, Input, SubmitButton } from '@/components/ui/crud'
 
 interface Result {
-  id: string; position: number; points: number; medal: string | null
+  id: string
+  position: number
+  points: number
+  medal: string | null
   team: { id: string; name: string; kelas: string }
   competition: { id: string; name: string; category: string }
 }
-interface Team   { id: string; name: string; kelas: string; competition: { id: string; name: string } }
-interface Competition { id: string; name: string; category: string }
+
+interface Team {
+  id: string
+  name: string
+  kelas: string
+  competition: { id: string; name: string }
+}
+
+interface Competition {
+  id: string
+  name: string
+  category: string
+}
 
 const MEDAL_OPTS = [
-  { value: 'GOLD', label: 'Juara 1 (Emas)' }, { value: 'SILVER', label: 'Juara 2 (Perak)' },
-  { value: 'BRONZE', label: 'Juara 3 (Perunggu)' }, { value: 'NONE', label: 'Tanpa Medali' },
+  { value: 'GOLD', label: 'Juara 1 (Medali Emas)' },
+  { value: 'SILVER', label: 'Juara 2 (Medali Perak)' },
+  { value: 'BRONZE', label: 'Juara 3 (Medali Perunggu)' },
+  { value: 'NONE', label: 'Tanpa Medali' },
 ]
-const CAT_ICON: Record<string, LucideIcon> = { OLAHRAGA: Dumbbell, AKADEMIK: Mic2, SENI: Palette }
-const CAT_GRAD: Record<string, string> = { OLAHRAGA: 'from-blue-500 to-cyan-500', AKADEMIK: 'from-violet-500 to-purple-500', SENI: 'from-amber-500 to-yellow-500' }
-const MEDAL_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  GOLD:   { label: '#1', color: 'text-amber-400', bg: 'bg-amber-500/15' },
-  SILVER: { label: '#2', color: 'text-slate-400',  bg: 'bg-slate-400/15'  },
-  BRONZE: { label: '#3', color: 'text-orange-400', bg: 'bg-orange-500/15' },
-  NONE:   { label: '',   color: 'text-white/40',   bg: ''                 },
+
+const CAT_ICON: Record<string, LucideIcon> = {
+  OLAHRAGA: Dumbbell,
+  AKADEMIK: Mic2,
+  SENI: Palette,
+}
+
+const MEDAL_CFG: Record<string, { label: string; badgeClass: string }> = {
+  GOLD:   { label: 'Emas (1)',     badgeClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25' },
+  SILVER: { label: 'Perak (2)',    badgeClass: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25' },
+  BRONZE: { label: 'Perunggu (3)', badgeClass: 'bg-amber-700/10 text-amber-800 dark:text-amber-500 border-amber-700/25' },
+  NONE:   { label: 'Peserta',      badgeClass: 'bg-secondary text-muted-foreground border-border' },
 }
 
 const EMPTY = { competitionId: '', teamId: '', position: '1', points: '100', medal: 'GOLD' }
@@ -32,16 +53,17 @@ export default function ResultsPage() {
   const { currentUser } = useAuth()
   const isAdmin = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'PANITIA'
 
-  const [results, setResults]         = useState<Result[]>([])
-  const [teams, setTeams]             = useState<Team[]>([])
-  const [comps, setComps]             = useState<Competition[]>([])
-  const [loading, setLoading]         = useState(true)
-  const [saving, setSaving]           = useState(false)
-  const [deleting, setDeleting]       = useState(false)
-  const [showModal, setShowModal]     = useState(false)
+  const [results, setResults] = useState<Result[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
+  const [comps, setComps] = useState<Competition[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Result | null>(null)
-  const [form, setForm]               = useState(EMPTY)
-  const [error, setError]             = useState('')
+  const [form, setForm] = useState(EMPTY)
+  const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -60,29 +82,53 @@ export default function ResultsPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openCreate = () => { setForm({ ...EMPTY, competitionId: comps[0]?.id || '' }); setError(''); setShowModal(true) }
+  const openCreate = () => {
+    setForm({ ...EMPTY, competitionId: comps[0]?.id || '' })
+    setError('')
+    setShowModal(true)
+  }
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault()
-    if (!form.competitionId || !form.teamId) { setError('Kompetisi dan tim wajib dipilih'); return }
-    setSaving(true); setError('')
+    if (!form.competitionId || !form.teamId) {
+      setError('Kompetisi dan tim peserta wajib dipilih')
+      return
+    }
+    setSaving(true)
+    setError('')
     try {
       const res = await fetch('/api/results', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ competitionId: form.competitionId, teamId: form.teamId, position: parseInt(form.position), points: parseInt(form.points), medal: form.medal }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          competitionId: form.competitionId,
+          teamId: form.teamId,
+          position: parseInt(form.position) || 1,
+          points: parseInt(form.points) || 0,
+          medal: form.medal,
+        }),
       })
       const json = await res.json()
-      if (json.success) { setShowModal(false); fetchData() }
-      else setError(json.error || 'Gagal menyimpan hasil')
-    } catch { setError('Gagal terhubung ke server') }
+      if (json.success) {
+        setShowModal(false)
+        fetchData()
+      } else {
+        setError(json.error || 'Gagal menyimpan hasil lomba')
+      }
+    } catch {
+      setError('Gagal menghubungi server')
+    }
     setSaving(false)
   }
 
   const handleDelete = async () => {
-    if (!deleteTarget) return; setDeleting(true)
+    if (!deleteTarget) return
+    setDeleting(true)
     try {
       await fetch(`/api/results/${deleteTarget.id}`, { method: 'DELETE', credentials: 'include' })
-      setDeleteTarget(null); fetchData()
+      setDeleteTarget(null)
+      fetchData()
     } catch { }
     setDeleting(false)
   }
@@ -91,140 +137,266 @@ export default function ResultsPage() {
 
   // Group by competition
   const byComp: Record<string, Result[]> = {}
-  results.forEach(r => { if (!byComp[r.competition.id]) byComp[r.competition.id] = []; byComp[r.competition.id].push(r) })
+  results.forEach(r => {
+    if (!byComp[r.competition.id]) byComp[r.competition.id] = []
+    byComp[r.competition.id].push(r)
+  })
   Object.values(byComp).forEach(arr => arr.sort((a, b) => a.position - b.position))
 
-  // Teams filtered by selected competition
-  const filteredTeams = form.competitionId ? teams.filter(t => t.competition?.id === form.competitionId) : teams
+  // Filtered by search
+  const filteredCompEntries = Object.entries(byComp).filter(([_, compResults]) => {
+    const compName = compResults[0].competition.name.toLowerCase()
+    const matchComp = compName.includes(search.toLowerCase())
+    const matchTeam = compResults.some(r => r.team.name.toLowerCase().includes(search.toLowerCase()) || r.team.kelas.toLowerCase().includes(search.toLowerCase()))
+    return matchComp || matchTeam
+  })
+
+  const filteredTeams = form.competitionId
+    ? teams.filter(t => t.competition?.id === form.competitionId)
+    : teams
   const compOpts = comps.map(c => ({ value: c.id, label: c.name }))
   const teamOpts = filteredTeams.map(t => ({ value: t.id, label: `${t.name} (${t.kelas})` }))
 
   const POS_OPT = [
-    { value: '1', label: 'Juara 1' }, { value: '2', label: 'Juara 2' },
-    { value: '3', label: 'Juara 3' }, { value: '4', label: 'Posisi 4' }, { value: '5', label: 'Posisi 5' },
+    { value: '1', label: 'Juara 1' },
+    { value: '2', label: 'Juara 2' },
+    { value: '3', label: 'Juara 3' },
+    { value: '4', label: 'Peringkat 4' },
+    { value: '5', label: 'Peringkat 5' },
   ]
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1"><Trophy className="w-4 h-4 text-amber-400" /><span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Classmeeting</span></div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Hasil Pertandingan</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{results.length} hasil tercatat</p>
+          <span className="academic-badge mb-2">Classmeeting 2026</span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Hasil Pertandingan & Juara
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Pencatatan resmi pemenang lomba, alokasi medali, dan penambahan poin ke klasemen kelas.
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={fetchData} className="px-3 py-2 rounded-xl text-xs transition" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Perbarui</span>
           </button>
           {isAdmin && (
-            <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg hover:opacity-90 transition">
-              <Plus className="w-4 h-4" /> Input Hasil
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Input Hasil Lomba</span>
             </button>
           )}
         </div>
       </div>
 
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 border border-border flex items-center justify-center shrink-0">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+              {Object.keys(byComp).length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Cabang Diselesaikan</p>
+          </div>
+        </div>
+
+        <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 border border-border flex items-center justify-center shrink-0">
+            <Star className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+              {results.filter(r => r.medal === 'GOLD').length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Medali Emas Diraih</p>
+          </div>
+        </div>
+
+        <div className="surface-card p-4 sm:p-5 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-secondary text-foreground/80 border border-border flex items-center justify-center shrink-0">
+            <Medal className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+              {results.length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Total Rekap Posisi</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="relative w-full sm:w-72">
+        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Cari cabang lomba atau tim..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-8 pr-3 py-2 rounded-lg text-xs bg-background border border-input text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
+
+      {/* Results by Competition */}
       {loading ? (
-        <div className="grid md:grid-cols-2 gap-4">{[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-48 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}</div>
-      ) : results.length === 0 ? (
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <Trophy className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Belum ada hasil pertandingan</p>
-          {isAdmin && <button onClick={openCreate} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 transition">Input Hasil Pertama</button>}
+        <div className="grid md:grid-cols-2 gap-5">
+          {[1, 2, 3, 4].map(i => <div key={i} className="surface-card rounded-xl h-48 bg-muted animate-pulse" />)}
+        </div>
+      ) : filteredCompEntries.length === 0 ? (
+        <div className="surface-card rounded-xl p-12 text-center border border-dashed border-border">
+          <Trophy className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-foreground">
+            {search ? 'Tidak ada hasil pertandingan sesuai pencarian' : 'Belum Ada Hasil Pertandingan'}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Gunakan tombol "Input Hasil Lomba" untuk mencatat pemenang dan mendistribusikan poin ke leaderboard.
+          </p>
         </div>
       ) : (
-        <>
-          {/* Summary */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: 'Kompetisi Selesai', value: Object.keys(byComp).length, color: 'from-amber-500 to-orange-400', icon: Trophy },
-              { label: 'Medali Emas', value: results.filter(r => r.medal === 'GOLD').length, color: 'from-yellow-500 to-amber-400', icon: Star },
-              { label: 'Total Hasil', value: results.length, color: 'from-blue-500 to-cyan-400', icon: Medal },
-            ].map(s => (
-              <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0`}><s.icon className="w-5 h-5 text-white" /></div>
-                <div><p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p><p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</p></div>
-              </div>
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 gap-5">
+          {filteredCompEntries.map(([compId, compResults]) => {
+            const comp = compResults[0].competition
+            const Icon = CAT_ICON[comp.category] || Trophy
 
-          {/* By competition */}
-          <div className="grid md:grid-cols-2 gap-5">
-            {Object.values(byComp).map(compResults => {
-              const comp = compResults[0].competition
-              const grad = CAT_GRAD[comp.category] || 'from-blue-500 to-violet-500'
-              return (
-                <div key={comp.id} className="glass-card rounded-2xl overflow-hidden">
-                  <div className={`h-1.5 bg-gradient-to-r ${grad}`} />
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0`}>
-                        {(() => { const Icon = CAT_ICON[comp.category] || Trophy; return <Icon className="w-5 h-5 text-white" /> })()}
-                      </div>
-                      <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{comp.name}</h3>
+            return (
+              <div key={compId} className="surface-card rounded-xl border border-border overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-secondary text-foreground/80 border border-border flex items-center justify-center">
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <div className="space-y-2">
-                      {compResults.map(r => (
-                        <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl group hover:bg-white/[0.03] transition" style={{ background: 'var(--subtle-bg)' }}>
-                          {(() => { const mc = MEDAL_CFG[r.medal || 'NONE']; return (
-                            <span className={`text-xs font-bold w-7 text-center flex-shrink-0 px-1 py-0.5 rounded ${mc.bg} ${mc.color}`}>{mc.label || `#${r.position}`}</span>
-                          ) })()}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{r.team.name}</p>
-                            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{r.team.kelas} · {r.points} pts</p>
-                          </div>
-                          {isAdmin && (
-                            <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                    <div>
+                      <h3 className="font-bold text-sm text-foreground leading-tight">{comp.name}</h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{comp.category}</p>
                     </div>
                   </div>
+                  <span className="text-xs text-muted-foreground font-semibold">
+                    {compResults.length} Juara
+                  </span>
                 </div>
-              )
-            })}
-          </div>
-        </>
+
+                <div className="p-4 divide-y divide-border/60">
+                  {compResults.map(r => {
+                    const mc = MEDAL_CFG[r.medal || 'NONE']
+                    return (
+                      <div key={r.id} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold border shrink-0 ${mc.badgeClass}`}>
+                            {mc.label}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                              {r.team.name}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              Kelas {r.team.kelas} • <span className="text-primary font-medium">+{r.points} Poin</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {isAdmin && (
+                          <button
+                            onClick={() => setDeleteTarget(r)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                            title="Hapus hasil"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       )}
 
-      {/* Input Hasil Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Input Hasil Pertandingan">
+      {/* Input Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Input Pemenang Pertandingan">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField label="Kompetisi" required>
-            <Select value={form.competitionId} onChange={e => { f('competitionId')(e.target.value); f('teamId')('') }} options={compOpts} placeholder="Pilih kompetisi..." />
+          <FormField label="Cabang Kompetisi" required>
+            <Select
+              value={form.competitionId}
+              onChange={e => { f('competitionId')(e.target.value); f('teamId')('') }}
+              options={compOpts}
+              placeholder="Pilih kompetisi..."
+              required
+            />
           </FormField>
-          <FormField label="Tim" required>
-            <Select value={form.teamId} onChange={e => f('teamId')(e.target.value)} options={teamOpts} placeholder={form.competitionId ? 'Pilih tim...' : 'Pilih kompetisi dulu'} />
+
+          <FormField label="Tim Pemenang" required>
+            <Select
+              value={form.teamId}
+              onChange={e => f('teamId')(e.target.value)}
+              options={teamOpts}
+              placeholder={form.competitionId ? 'Pilih tim delegasi...' : 'Pilih kompetisi terlebih dahulu'}
+              required
+            />
           </FormField>
+
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Posisi">
-              <Select value={form.position} onChange={e => {
-                const pos = e.target.value
-                f('position')(pos)
-                const medals: Record<string, string> = { '1': 'GOLD', '2': 'SILVER', '3': 'BRONZE' }
-                f('medal')(medals[pos] || 'NONE')
-                f('points')(pos === '1' ? '100' : pos === '2' ? '75' : pos === '3' ? '50' : '25')
-              }} options={POS_OPT} />
+            <FormField label="Peringkat Juara">
+              <Select
+                value={form.position}
+                onChange={e => {
+                  const pos = e.target.value
+                  f('position')(pos)
+                  const medals: Record<string, string> = { '1': 'GOLD', '2': 'SILVER', '3': 'BRONZE' }
+                  f('medal')(medals[pos] || 'NONE')
+                  f('points')(pos === '1' ? '100' : pos === '2' ? '60' : pos === '3' ? '30' : '10')
+                }}
+                options={POS_OPT}
+              />
             </FormField>
-            <FormField label="Medali">
-              <Select value={form.medal} onChange={e => f('medal')(e.target.value)} options={MEDAL_OPTS} />
+
+            <FormField label="Alokasi Medali">
+              <Select
+                value={form.medal}
+                onChange={e => f('medal')(e.target.value)}
+                options={MEDAL_OPTS}
+              />
             </FormField>
           </div>
-          <FormField label="Poin" hint="Poin untuk leaderboard kelas">
-            <input type="number" min="0" value={form.points} onChange={e => f('points')(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition focus:ring-2 focus:ring-blue-500/40"
-              style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-primary)' }} />
+
+          <FormField label="Poin Klasemen" hint="Poin yang akan diakumulasikan ke leaderboard kelas tim">
+            <Input
+              type="number"
+              min="0"
+              value={form.points}
+              onChange={e => f('points')(e.target.value)}
+            />
           </FormField>
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          <SubmitButton loading={saving} label="Simpan Hasil" />
+
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <SubmitButton loading={saving} label="Simpan Hasil Pertandingan" />
         </form>
       </Modal>
 
-      <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
-        title="Hapus Hasil" message={`Hapus hasil ${deleteTarget?.team?.name} dari ${deleteTarget?.competition?.name}?`} />
+      {/* Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Hapus Hasil Pertandingan"
+        message={`Hapus hasil tim "${deleteTarget?.team?.name}" pada cabang ${deleteTarget?.competition?.name}? Poin kelas akan dikurangi secara otomatis.`}
+        confirmLabel="Hapus Hasil"
+      />
     </div>
   )
 }

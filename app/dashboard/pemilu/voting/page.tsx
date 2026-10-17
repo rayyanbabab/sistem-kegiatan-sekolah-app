@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Vote, CheckCircle, Clock, AlertCircle, Trophy } from 'lucide-react'
+import { Vote, CheckCircle, Clock, AlertCircle, Trophy, Check } from 'lucide-react'
 
 interface Candidate {
   id: string; number: number; visiMisi: string; photo: string | null
@@ -42,7 +42,7 @@ export default function VotingPage() {
           setMyVoteCandidateId(j.data.vote?.candidateId || null)
         }
       }
-    } catch { /* ignore */ }
+    } catch { }
     setLoading(false)
   }, [])
 
@@ -66,133 +66,188 @@ export default function VotingPage() {
   }
 
   const isSessionOpen = session?.status === 'OPEN'
-  const GRADIENTS = ['from-blue-500 to-cyan-500', 'from-violet-500 to-purple-500', 'from-pink-500 to-rose-500', 'from-amber-500 to-orange-500']
 
   if (loading) return (
-    <div className="p-6 max-w-4xl mx-auto space-y-4">
-      <div className="h-8 w-48 rounded-xl animate-pulse" style={{ background: 'var(--subtle-bg)' }} />
-      <div className="grid md:grid-cols-2 gap-4">{[1,2,3,4].map(i => <div key={i} className="glass-card rounded-2xl h-52 animate-pulse" style={{ background: 'var(--subtle-bg)' }} />)}</div>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-4">
+      <div className="h-6 w-48 rounded-md bg-muted animate-pulse" />
+      <div className="grid md:grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="surface-card rounded-xl h-52 animate-pulse bg-muted" />
+        ))}
+      </div>
     </div>
   )
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1"><Vote className="w-4 h-4 text-violet-400" /><span className="text-xs text-violet-400 font-medium uppercase tracking-wider">Pemilu OSIS</span></div>
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Voting</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Pilih satu kandidat terbaik untuk memimpin OSIS</p>
+      <div className="pb-4 border-b border-border">
+        <span className="academic-badge mb-2">Bilik Suara Digital</span>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Pemungutan Suara OSIS</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Gunakan hak suaramu secara bijak. Setiap akun siswa hanya dapat memilih 1 kali.
+        </p>
       </div>
 
-      {/* Session status */}
+      {/* Session status banner */}
       {session && (
-        <div className={`glass-card rounded-2xl p-4 flex items-center gap-3 border ${isSessionOpen ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSessionOpen ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
-          <div className="flex-1">
-            <p className={`text-sm font-semibold ${isSessionOpen ? 'text-green-400' : 'text-red-400'}`}>
-              {isSessionOpen ? 'Sesi Voting Sedang Berlangsung' : `Voting ${session.status === 'CLOSED' ? 'Telah Ditutup' : 'Belum Dibuka'}`}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              {new Date(session.startTime).toLocaleString('id-ID')} — {new Date(session.endTime).toLocaleString('id-ID')}
-            </p>
+        <div className={`surface-card p-4 rounded-xl flex items-center justify-between gap-4 border ${
+          isSessionOpen ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border bg-muted/30'
+        }`}>
+          <div className="flex items-center gap-3">
+            <span className={`w-2.5 h-2.5 rounded-full ${isSessionOpen ? 'bg-emerald-500' : 'bg-muted-foreground'}`} />
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-foreground">
+                {isSessionOpen ? 'Sesi Pemungutan Suara Sedang Berlangsung' : `Sesi Pemilihan ${session.status === 'CLOSED' ? 'Telah Berakhir' : 'Belum Dibuka'}`}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Periode: {new Date(session.startTime).toLocaleString('id-ID')} sampai {new Date(session.endTime).toLocaleString('id-ID')}
+              </p>
+            </div>
           </div>
           {isSessionOpen && (
-            <div className="text-right">
-              <p className="text-sm font-bold text-green-400">{session.votedCount} / {session.totalVoters}</p>
-              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>sudah memilih</p>
+            <div className="text-right shrink-0">
+              <span className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                {session.votedCount} / {session.totalVoters}
+              </span>
+              <p className="text-[10px] text-muted-foreground">Suara terhimpun</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Success */}
+      {/* Success Notification */}
       {success && (
-        <div className="glass-card rounded-2xl p-6 text-center border border-green-500/20 bg-green-500/5">
-          <div className="w-14 h-14 mx-auto rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mb-3">
-            <CheckCircle className="w-7 h-7 text-green-400" />
+        <div className="surface-card rounded-xl p-6 text-center border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+          <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-xs">
+            <Check className="w-5 h-5" />
           </div>
-          <h2 className="text-xl font-bold text-green-400">Suara Berhasil Dicatat!</h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Terima kasih telah menggunakan hak suara Anda.</p>
+          <h2 className="text-base font-bold text-foreground">Hak Suara Anda Berhasil Disimpan</h2>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            Terima kasih telah berpartisipasi dalam demokrasi sekolah. Rekapitulasi suara dapat dipantau di halaman Real Count.
+          </p>
         </div>
       )}
 
-      {/* Already voted */}
-      {!success && hasVoted && (
-        <div className="glass-card rounded-2xl p-5 border border-blue-500/20 bg-blue-500/5 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Anda sudah memberikan suara. Lihat hasilnya di Real Count.</p>
+      {/* Already Voted Info */}
+      {hasVoted && !success && (
+        <div className="surface-card rounded-xl p-4 border border-border bg-muted/40 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-xs sm:text-sm font-bold text-foreground">Anda Sudah Menggunakan Hak Suara</p>
+            <p className="text-[11px] text-muted-foreground">Setiap siswa dibatasi satu kali voting untuk menjaga integritas pemilihan.</p>
+          </div>
         </div>
       )}
 
-      {/* Not open */}
-      {!isSessionOpen && !hasVoted && (
-        <div className="glass-card rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5 flex items-center gap-3">
-          <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
-          <p className="text-sm text-amber-400">Sesi voting belum dibuka atau sudah ditutup.</p>
+      {/* Session closed warning */}
+      {!isSessionOpen && (
+        <div className="surface-card rounded-xl p-4 border border-border bg-muted/40 flex items-center gap-3">
+          <Clock className="w-5 h-5 text-muted-foreground shrink-0" />
+          <p className="text-xs text-muted-foreground">Bilik suara saat ini belum aktif atau telah ditutup oleh panitia pemilu.</p>
         </div>
       )}
 
-      {/* Error */}
+      {/* Error banner */}
       {error && (
-        <div className="glass-card rounded-2xl p-4 border border-red-500/20 bg-red-500/5 flex items-center gap-3">
-          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="surface-card rounded-xl p-4 border border-destructive/30 bg-destructive/5 flex items-center gap-3">
+          <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+          <p className="text-xs text-destructive">{error}</p>
         </div>
       )}
 
-      {/* Candidates */}
-      <div className="grid md:grid-cols-2 gap-5">
-        {candidates.map((c, idx) => {
-          const grad = GRADIENTS[idx % GRADIENTS.length]
+      {/* Candidates List */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {candidates.map((c) => {
           const isSelected = selectedId === c.id
           const isMyVote = myVoteCandidateId === c.id
           const canSelect = isSessionOpen && !hasVoted && !success
+
           return (
             <button
               key={c.id}
               type="button"
               onClick={() => canSelect && setSelectedId(c.id)}
               disabled={!canSelect}
-              className={`glass-card rounded-2xl overflow-hidden text-left transition-all w-full ${canSelect ? 'cursor-pointer hover:-translate-y-0.5 hover:border-white/25' : 'cursor-default'} ${isSelected ? 'ring-2 ring-blue-500/50' : ''} ${isMyVote ? 'ring-2 ring-green-500/50' : ''}`}
+              className={`surface-card rounded-xl p-5 text-left transition-all w-full relative ${
+                canSelect ? 'cursor-pointer hover:border-primary/50' : 'cursor-default'
+              } ${
+                isSelected
+                  ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+                  : isMyVote
+                  ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-500/5'
+                  : 'border-border'
+              }`}
             >
-              <div className={`h-1.5 bg-gradient-to-r ${grad}`} />
-              <div className="p-5">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="relative flex-shrink-0">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-xl font-bold text-white shadow-lg overflow-hidden`}>
-                      {(c.user.avatar || c.photo) ? <img src={c.photo || c.user.avatar!} alt={c.user.name} className="w-full h-full object-cover" /> : c.user.name.charAt(0)}
-                    </div>
-                    <div className={`absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br ${grad} border-2 flex items-center justify-center text-white text-xs font-bold`} style={{ borderColor: 'var(--glass-bg)' }}>
-                      {c.number}
-                    </div>
+              <div className="flex items-start gap-4 mb-3">
+                {/* Number Badge and Photo */}
+                <div className="relative shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-secondary text-secondary-foreground border border-border flex items-center justify-center font-bold text-base overflow-hidden">
+                    {(c.user.avatar || c.photo) ? (
+                      <img src={c.photo || c.user.avatar!} alt={c.user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{c.user.name.charAt(0)}</span>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{c.user.name}</h3>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.user.kelas}</p>
+                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-xs">
+                    {c.number}
                   </div>
-                  {(isSelected || isMyVote) && (
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isMyVote ? 'bg-green-500' : 'bg-blue-500'}`}>
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                  )}
                 </div>
-                <p className="text-xs leading-relaxed line-clamp-3" style={{ color: 'var(--text-muted)' }}>{c.visiMisi}</p>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm text-foreground truncate">{c.user.name}</h3>
+                  <p className="text-xs text-muted-foreground">Kelas: {c.user.kelas || '-'}</p>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary mt-1 inline-block">
+                    Paslon Nomor Urut {c.number}
+                  </span>
+                </div>
+
+                {(isSelected || isMyVote) && (
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                    isMyVote ? 'bg-emerald-500 text-white' : 'bg-primary text-primary-foreground'
+                  }`}>
+                    <Check className="w-3.5 h-3.5" />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider mb-1">Visi & Misi:</p>
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                  {c.visiMisi || 'Belum mencantumkan visi misi.'}
+                </p>
               </div>
             </button>
           )
         })}
       </div>
 
-      {/* Submit button */}
+      {/* Submit Button */}
       {isSessionOpen && !hasVoted && !success && (
         <button
           onClick={handleVote}
           disabled={!selectedId || submitting}
-          className={`w-full py-3.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg ${selectedId ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 hover:-translate-y-0.5' : 'opacity-40 cursor-not-allowed'}`}
-          style={!selectedId ? { background: 'var(--subtle-bg)', color: 'var(--text-faint)', border: '1px solid var(--subtle-border)' } : {}}
+          className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs ${
+            selectedId
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-60'
+          }`}
         >
-          {submitting ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menyimpan...</> :
-            <><Trophy className="w-4 h-4" /> {selectedId ? `Pilih Kandidat #${candidates.find(c=>c.id===selectedId)?.number}` : 'Pilih Satu Kandidat'}</>}
+          {submitting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              <span>Menyimpan pilihan suara...</span>
+            </>
+          ) : (
+            <>
+              <Vote className="w-4 h-4" />
+              <span>
+                {selectedId
+                  ? `Konfirmasi Pilihan untuk Paslon #${candidates.find(c => c.id === selectedId)?.number}`
+                  : 'Pilih salah satu kandidat di atas'}
+              </span>
+            </>
+          )}
         </button>
       )}
     </div>

@@ -6,17 +6,17 @@ import { useAuth } from '@/context/AuthContext'
 import LandingPage from './landing/page'
 
 export default function Home() {
-  const { user } = useAuth()
+  const { currentUser, isAuthenticated } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       router.push('/dashboard')
     }
-  }, [user, router])
+  }, [isAuthenticated, router])
 
   // If logged in, redirect happens automatically
-  if (user) {
+  if (isAuthenticated) {
     return null
   }
 

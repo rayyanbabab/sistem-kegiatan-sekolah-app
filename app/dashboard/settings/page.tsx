@@ -39,9 +39,10 @@ export default function SettingsPage() {
   if (currentUser?.role !== 'SUPER_ADMIN') {
     return (
       <div className="p-6 max-w-2xl mx-auto">
-        <div className="glass-card rounded-2xl p-16 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-muted)' }}>Akses Ditolak — Hanya Super Admin</p>
+        <div className="surface-card rounded-xl p-12 text-center border border-border">
+          <Shield className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <p className="font-semibold text-foreground">Akses Dibatasi: Khusus Super Admin</p>
+          <p className="text-xs text-muted-foreground mt-1">Pengaturan identitas sekolah hanya dapat diubah oleh administrator sistem.</p>
         </div>
       </div>
     )
@@ -71,58 +72,54 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Settings className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-green-400 font-medium uppercase tracking-wider">Manajemen Sekolah</span>
-          </div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Pengaturan Sekolah</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Konfigurasi identitas dan tampilan aplikasi</p>
+          <span className="academic-badge mb-2">Konfigurasi Sistem</span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Pengaturan Sekolah</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Konfigurasi nama institusi dan logo aplikasi kesiswaan.</p>
         </div>
-        <button onClick={fetchData} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition"
-          style={{ background: 'var(--subtle-bg)', border: '1px solid var(--subtle-border)', color: 'var(--text-muted)' }}>
+        <button
+          onClick={fetchData}
+          className="self-start sm:self-auto flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>Perbarui</span>
         </button>
       </div>
 
       {loading ? (
-        <div className="glass-card rounded-2xl p-8 animate-pulse space-y-4">
-          <div className="h-20 w-20 rounded-full" style={{ background: 'var(--subtle-bg)' }} />
-          <div className="h-4 rounded w-48" style={{ background: 'var(--subtle-bg)' }} />
-          <div className="h-4 rounded w-64" style={{ background: 'var(--subtle-bg)' }} />
-        </div>
+        <div className="surface-card rounded-xl p-8 animate-pulse space-y-4 bg-muted" />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Logo Upload */}
-          <div className="glass-card rounded-2xl p-6 space-y-5">
+          <div className="surface-card rounded-xl p-6 border border-border space-y-4">
             <div>
-              <h2 className="font-semibold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>Logo Sekolah</h2>
-              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>Tampil di sidebar aplikasi menggantikan inisial "SM"</p>
+              <h2 className="font-bold text-sm text-foreground">Logo Institusi Sekolah</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Tampil pada bilah samping (sidebar) dan kop pengumuman.</p>
             </div>
             <ImageUpload
               value={form.logo}
               onChange={logo => setForm(p => ({ ...p, logo }))}
               shape="square"
-              size={96}
+              size={88}
               placeholder="Upload logo sekolah (maks 500KB)"
               maxSizeKB={500}
             />
           </div>
 
           {/* Nama Sekolah */}
-          <div className="glass-card rounded-2xl p-6 space-y-5">
+          <div className="surface-card rounded-xl p-6 border border-border space-y-4">
             <div>
-              <h2 className="font-semibold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>Identitas Sekolah</h2>
-              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>Nama sekolah yang tampil di sidebar dan halaman login</p>
+              <h2 className="font-bold text-sm text-foreground">Identitas Resmi Sekolah</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Nama resmi yang tampil di header dan halaman login</p>
             </div>
             <FormField label="Nama Sekolah" required>
               <Input
                 value={form.schoolName}
                 onChange={e => setForm(p => ({ ...p, schoolName: e.target.value }))}
-                placeholder="cth. SMKS Digital Nusantara"
+                placeholder="Contoh: SMKS Digital Nusantara"
                 required
               />
             </FormField>
@@ -130,32 +127,37 @@ export default function SettingsPage() {
 
           {/* Last updated */}
           {settings?.updatedAt && (
-            <p className="text-xs text-center" style={{ color: 'var(--text-faint)' }}>
+            <p className="text-xs text-center text-muted-foreground">
               Terakhir diperbarui: {new Date(settings.updatedAt).toLocaleString('id-ID')}
             </p>
           )}
 
           {/* Feedback */}
-          {error   && <p className="text-xs text-red-400 bg-red-500/10 px-4 py-2.5 rounded-xl">{error}</p>}
-          {success && <p className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 px-4 py-2.5 rounded-xl"><CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />{success}</p>}
+          {error && <p className="text-xs text-destructive bg-destructive/10 px-4 py-2.5 rounded-lg border border-destructive/20">{error}</p>}
+          {success && (
+            <p className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-4 py-2.5 rounded-lg border border-emerald-500/20">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              <span>{success}</span>
+            </p>
+          )}
 
-          <SubmitButton loading={saving} label="Simpan Pengaturan" />
+          <SubmitButton loading={saving} label="Simpan Pengaturan Sekolah" />
         </form>
       )}
 
       {/* Preview Card */}
       {!loading && (
-        <div className="glass-card rounded-2xl p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-faint)' }}>Preview Sidebar</p>
-          <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--subtle-bg)' }}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0 overflow-hidden">
+        <div className="surface-card rounded-xl p-5 border border-border">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-4 text-muted-foreground">Pratinjau Identitas Sekolah</p>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border">
+            <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-xs">
               {form.logo
                 ? <img src={form.logo} alt="logo" className="w-full h-full object-cover" />
-                : <span className="text-white font-bold text-sm">{form.schoolName?.slice(0, 2).toUpperCase() || 'SM'}</span>}
+                : <span>{form.schoolName?.slice(0, 2).toUpperCase() || 'SM'}</span>}
             </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{form.schoolName || 'Nama Sekolah'}</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>Manajemen Kegiatan</p>
+              <p className="font-bold text-sm text-foreground">{form.schoolName || 'Nama Sekolah'}</p>
+              <p className="text-[11px] text-muted-foreground">Manajemen Kegiatan</p>
             </div>
           </div>
         </div>
